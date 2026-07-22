@@ -1,187 +1,367 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
-import { router } from 'expo-router';
-import { sendChatMessage, ApiError } from '../../lib/api';
-import { useUser } from '../../context/UserContext';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
-import { radius, spacing, typography } from '../../theme/typography';
+import { sendChatMessage } from '../../lib/api';
 
-type Message = {
+interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  sender: 'ai' | 'user';
   text: string;
-};
+}
 
-type Props = {
-  context?: string;
-  showBack?: boolean;
-};
+const QUICK_RECOMMENDATIONS = [
+  '식단 관리',
+  '음식 안전성',
+  '주수별 주의사항',
+  '주수별 증상',
+];
 
-export default function ChatScreenContent({ context, showBack = false }: Props) {
-  const { user } = useUser();
+export function ChatScreenContent() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 'welcome',
-      role: 'assistant',
-      text: context
-        ? `${context}에 대해 궁금한 점을 물어보세요 :)`
-        : '안녕하세요! 식품 안전, 임신 주차별 정보, 가벼운 운동에 대해 물어보세요 :)',
+      id: '1',
+      sender: 'ai',
+      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :)\n오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
     },
   ]);
-  const [input, setInput] = useState('');
+  const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
-  const listRef = useRef<FlatList>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleSend = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages, loading]);
 
-    const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', text };
+  const handleSend = async (textToSend?: string) => {
+    const text = textToSend || inputText;
+    if (!text.trim() || loading) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: text.trim(),
+    };
+
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    if (!textToSend) setInputText('');
     setLoading(true);
 
     try {
-      const res = await sendChatMessage(text, user?.week, context);
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', text: res.reply }]);
-    } catch (err) {
-      const msg = err instanceof ApiError ? err.message : '답변을 가져오지 못했어요. 다시 시도해주세요.';
-      setMessages((prev) => [...prev, { id: `err-${Date.now()}`, role: 'assistant', text: msg }]);
+      const response = await sendChatMessage(text);
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: response.reply || '답변을 불러오지 못했습니다.',
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (error) {
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: '죄송합니다. 네트워크 요청 중 오류가 발생했습니다.',
+      };
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
     }
+  };
+
+  const handleGoHome = () => {
+    router.replace('/(tabs)/home');
   };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
+      {/* 상단 헤더 (back.png 버튼 포함) */}
       <View style={styles.header}>
-        {showBack && (
-          <Pressable onPress={() => router.back()} hitSlop={12}>
-            <Text style={{ fontSize: 20 }}>←</Text>
-          </Pressable>
-        )}
-        <View style={{ flex: 1 }}>
-          <Text style={typography.h3}>맘편하게 챗봇</Text>
-          {!!context && (
-            <Text style={[typography.small, { color: colors.textTertiary }]} numberOfLines={1}>
-              {context}
-            </Text>
-          )}
-        </View>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={handleGoHome}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require('../../assets/images/back.png')}
+            style={styles.backIcon}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>맘편하게 챗봇</Text>
+        <View style={styles.headerRightSpacer} />
       </View>
 
-      <FlatList
-        ref={listRef}
-        data={messages}
-        keyExtractor={(m) => m.id}
-        contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
-        renderItem={({ item }) => (
+      {/* 메시지 스크롤 영역 */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.chatArea}
+        contentContainerStyle={styles.chatContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {messages.map((msg) => (
           <View
+            key={msg.id}
             style={[
-              styles.bubble,
-              item.role === 'user' ? styles.bubbleUser : styles.bubbleAssistant,
+              styles.messageRow,
+              msg.sender === 'user' ? styles.userRow : styles.aiRow,
             ]}
           >
-            <Text style={[typography.body, { color: item.role === 'user' ? colors.textOnPrimary : colors.textPrimary }]}>
-              {item.text}
-            </Text>
+            {msg.sender === 'ai' && (
+              <View style={styles.avatarContainer}>
+                <Ionicons name="sparkles" size={18} color="#FFF" />
+              </View>
+            )}
+            <View
+              style={[
+                styles.bubble,
+                msg.sender === 'user' ? styles.userBubble : styles.aiBubble,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.messageText,
+                  msg.sender === 'user'
+                    ? styles.userMessageText
+                    : styles.aiMessageText,
+                ]}
+              >
+                {msg.text}
+              </Text>
+            </View>
+          </View>
+        ))}
+
+        {loading && (
+          <View style={[styles.messageRow, styles.aiRow]}>
+            <View style={styles.avatarContainer}>
+              <Ionicons name="sparkles" size={18} color="#FFF" />
+            </View>
+            <View style={[styles.bubble, styles.aiBubble, styles.loadingBubble]}>
+              <ActivityIndicator size="small" color={colors.primary} />
+            </View>
           </View>
         )}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-      />
+      </ScrollView>
 
-      {loading && (
-        <View style={{ paddingLeft: spacing.md, paddingBottom: spacing.xs }}>
-          <ActivityIndicator color={colors.primary} size="small" />
-        </View>
-      )}
+      {/* 빠른 추천 칩 영역 */}
+      <View style={styles.chipSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipScrollContainer}
+        >
+          {QUICK_RECOMMENDATIONS.map((chip, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.chipButton}
+              onPress={() => handleSend(`${chip}에 대해 알려줘`)}
+            >
+              <Text style={styles.chipText}>{chip}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-      <View style={styles.inputRow}>
+      {/* 하단 입력창 (하단 여백 패딩 보정) */}
+      <View
+        style={[
+          styles.inputContainer,
+          { paddingBottom: Math.max(insets.bottom, 10) },
+        ]}
+      >
         <TextInput
           style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="궁금한 점을 물어보세요"
-          placeholderTextColor={colors.textTertiary}
-          onSubmitEditing={handleSend}
+          placeholder="메시지를 입력하세요"
+          placeholderTextColor="#999"
+          value={inputText}
+          onChangeText={setInputText}
+          onSubmitEditing={() => handleSend()}
           returnKeyType="send"
         />
-        <Pressable style={styles.sendBtn} onPress={handleSend} disabled={loading}>
-          <Text style={{ color: colors.textOnPrimary, fontSize: 16 }}>↑</Text>
-        </Pressable>
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            !inputText.trim() && styles.sendButtonDisabled,
+          ]}
+          onPress={() => handleSend()}
+          disabled={!inputText.trim() || loading}
+        >
+          <Ionicons name="paper-plane" size={18} color="#FFF" />
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAF8F7',
+  },
   header: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.bgWhite,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    backgroundColor: '#FAF8F7',
     borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
+    borderBottomColor: '#F0EBE8',
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  backIcon: {
+    width: 20,
+    height: 20,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#222',
+  },
+  headerRightSpacer: {
+    width: 36,
+  },
+  chatArea: {
+    flex: 1,
+  },
+  chatContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 16,
+  },
+  messageRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  aiRow: {
+    justifyContent: 'flex-start',
+  },
+  userRow: {
+    justifyContent: 'flex-end',
+  },
+  avatarContainer: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   bubble: {
-    maxWidth: '80%',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    maxWidth: '75%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  bubbleAssistant: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.bgWhite,
-    borderWidth: 1,
-    borderColor: colors.border,
+  aiBubble: {
+    backgroundColor: '#F3EFEF',
+    borderTopLeftRadius: 4,
   },
-  bubbleUser: {
-    alignSelf: 'flex-end',
-    backgroundColor: colors.primary,
+  userBubble: {
+    backgroundColor: '#FFFFFF',
+    borderTopRightRadius: 4,
   },
-  inputRow: {
+  loadingBubble: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  aiMessageText: {
+    color: '#333333',
+  },
+  userMessageText: {
+    color: '#222222',
+  },
+  chipSection: {
+    paddingVertical: 8,
+    backgroundColor: '#FAF8F7',
+  },
+  chipScrollContainer: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  chipButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.2,
+    borderColor: colors.primary,
+    backgroundColor: '#FFF8F7',
+  },
+  chipText: {
+    fontSize: 13,
+    color: colors.primary,
+    fontWeight: '500',
+  },
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.divider,
-    backgroundColor: colors.bgWhite,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    backgroundColor: '#FAF8F7',
+    gap: 8,
   },
   input: {
     flex: 1,
-    height: 44,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bg,
+    height: 46,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 23,
+    paddingHorizontal: 18,
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    color: colors.textPrimary,
+    borderColor: '#E8E1DE',
+    fontSize: 14,
+    color: '#333',
   },
-  sendBtn: {
+  sendButton: {
     width: 44,
     height: 44,
-    borderRadius: radius.pill,
+    borderRadius: 22,
     backgroundColor: colors.primary,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#E5C4C0',
   },
 });

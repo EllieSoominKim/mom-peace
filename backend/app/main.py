@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-from app.routers import alternatives, auth, chat, community, diary, guide, scan
+from app.routers import alternatives, auth, chat, community, diary, guide, nutrition, scan
 
 # 최초 실행 시 테이블 자동 생성 (SQLite 기준, 운영 전환 시 Alembic 마이그레이션 권장)
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.include_router(alternatives.router)
 app.include_router(community.router)
 app.include_router(diary.router)
 app.include_router(chat.router)
+app.include_router(nutrition.router)
 
 
 @app.get("/")

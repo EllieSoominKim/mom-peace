@@ -140,3 +140,79 @@ def chat_reply(message: str, pregnancy_week: int | None = None, context: str | N
         return response.text.strip()
     except Exception:
         return _mock_chat_reply(message)
+
+# ---- 영양성분표 이미지 분석(OCR) ----
+
+NUTRITION_OCR_PROMPT = """
+아래는 식품 뒷면에 인쇄된 '영양정보' 표를 촬영한 사진입니다.
+사진 속 표에서 다음 값을 읽어서, 반드시 아래 JSON 형식으로만 응답하세요.
+표에 없는 항목은 0으로 채우세요. 다른 텍스트는 포함하지 마세요.
+
+{
+  "productName": "표에 제품명이 보이면 그 이름, 안 보이면 빈 문자열",
+  "totalContent": "총 내용량 숫자만 (g 단위, 예: 80)",
+  "kcal": "열량(kcal) 숫자만",
+  "carbG": "탄수화물(g) 숫자만",
+  "sugarG": "당류(g) 숫자만",
+  "sodiumMg": "나트륨(mg) 숫자만",
+  "fatG": "지방(g) 숫자만",
+  "proteinG": "단백질(g) 숫자만"
+}
+"""
+
+
+def _mock_nutrition_ocr() -> dict:
+    return {
+        "productName": "",
+        "totalContent": 80,
+        "kcal": 410,
+        "carbG": 52,
+        "sugarG": 5,
+        "sodiumMg": 460,
+        "fatG": 20,
+        "proteinG": 5,
+    }
+
+
+def extract_nutrition_from_image(image_base64: str, mime_type: str = "image/jpeg") -> dict:
+    """영양정보표 사진(base64)을 Gemini에 보내 수치를 읽어온다.
+    GEMINI_API_KEY가 없거나 호출/파싱이 실패하면 데모용 목데이터로 안전하게 폴백한다."""
+    if not settings.gemini_api_key:
+        return _mock_nutrition_ocr()
+
+    import base64
+
+    import google.generativeai as genai  # 실제 호출 시점에만 import
+
+    genai.configure(api_key=settings.gemini_api_key)
+    model = genai.GenerativeModel(
+        settings.gemini_model,
+        generation_config={"response_mime_type": "application/json"},
+    )
+
+    try:
+        image_bytes = base64.b64decode(image_base64)
+        response = model.generate_content(
+            [NUTRITION_OCR_PROMPT, {"mime_type": mime_type, "data": image_bytes}]
+        )
+        data = json.loads(response.text)
+
+        def _num(v):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return 0.0
+
+        return {
+            "productName": str(data.get("productName") or ""),
+            "totalContent": _num(data.get("totalContent")),
+            "kcal": _num(data.get("kcal")),
+            "carbG": _num(data.get("carbG")),
+            "sugarG": _num(data.get("sugarG")),
+            "sodiumMg": _num(data.get("sodiumMg")),
+            "fatG": _num(data.get("fatG")),
+            "proteinG": _num(data.get("proteinG")),
+        }
+    except Exception as e:
+        print(f"[gemini_client] 영양성분표 이미지 분석 실패 -> 목데이터로 폴백. 원인: {type(e).__name__}: {e}")
+        return _mock_nutrition_ocr()

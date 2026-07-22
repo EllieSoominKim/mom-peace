@@ -1,6 +1,19 @@
 import React from 'react';
-import ChatScreenContent from '../../components/chat/ChatScreenContent';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChatScreenContent } from '../../components/chat/ChatScreenContent';
 
-export default function ChatTab() {
-  return <ChatScreenContent />;
+export default function ChatTabScreen() {
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ChatScreenContent />
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAF8F7',
+  },
+});

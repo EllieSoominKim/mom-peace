@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import ScreenContainer from '../components/ui/ScreenContainer';
 import Card from '../components/ui/Card';
@@ -61,21 +61,29 @@ function todayTimeLabel() {
   return `${y}.${m}.${d}. ${hh}:${mm}`;
 }
 
-const PORTION_UNITS = ['인분', '접시', 'g'];
+const PORTION_UNITS = ['인분', '그릇', '접시', '봉지', '조각', 'g', 'ml', '개'];
 
 export default function ScanResultScreen() {
-  const { productName: paramName } = useLocalSearchParams<{ productName?: string }>();
+  const { productName: paramName, kcal: paramKcal, carbG: paramCarbG, sugarG: paramSugarG } =
+    useLocalSearchParams<{ productName?: string; kcal?: string; carbG?: string; sugarG?: string }>();
   const { addEntry } = useDiary();
   const [portion, setPortion] = useState('1');
-  const [unitIndex, setUnitIndex] = useState(0);
+  const [unit, setUnit] = useState(PORTION_UNITS[0]);
+  const [unitPickerOpen, setUnitPickerOpen] = useState(false);
+  const [productName, setProductName] = useState(paramName || '');
 
-  const productName = paramName || '유기농 그릭 요거트';
   const scannedAt = useMemo(() => todayTimeLabel(), []);
 
+  const baseNutrient = {
+    carbG: paramCarbG ? parseFloat(paramCarbG) : BASE_NUTRIENT.carbG,
+    sugarG: paramSugarG ? parseFloat(paramSugarG) : BASE_NUTRIENT.sugarG,
+    kcal: paramKcal ? parseFloat(paramKcal) : BASE_NUTRIENT.kcal,
+  };
+
   const multiplier = parseFloat(portion) || 0;
-  const carbG = Math.round(BASE_NUTRIENT.carbG * multiplier);
-  const sugarG = Math.round(BASE_NUTRIENT.sugarG * multiplier);
-  const kcal = Math.round(BASE_NUTRIENT.kcal * multiplier);
+  const carbG = Math.round(baseNutrient.carbG * multiplier);
+  const sugarG = Math.round(baseNutrient.sugarG * multiplier);
+  const kcal = Math.round(baseNutrient.kcal * multiplier);
 
   const level = levelFromSugar(sugarG);
   const meta = STATUS_META[level];
@@ -99,97 +107,131 @@ export default function ScanResultScreen() {
   };
 
   return (
-    <ScreenContainer>
-      <View style={styles.backRow}>
-        <Pressable onPress={() => router.push('/(tabs)/scan')} hitSlop={12}>
-          <Text style={{ fontSize: 20 }}>←</Text>
-        </Pressable>
-        <Text style={styles.title}>스캔 결과</Text>
-      </View>
-
-      <Text style={[typography.body, { color: colors.textSecondary, marginBottom: spacing.md }]}>
-        영양 성분표 인식이 완료되었어요!
-      </Text>
-
-      <Card>
-        <Text style={[typography.h2, { color: colors.primary }]}>{productName}</Text>
-        <View style={styles.metaRow}>
-          <Text style={[typography.caption, { color: colors.textTertiary, width: 68 }]}>스캔 시간</Text>
-          <Text style={typography.body}>{scannedAt}</Text>
-        </View>
-      </Card>
-
-      <Card style={{ marginTop: spacing.md }}>
-        <Text style={typography.bodyBold}>섭취량</Text>
-        <View style={styles.portionRow}>
-          <TextInput
-            style={styles.portionInput}
-            value={portion}
-            onChangeText={setPortion}
-            keyboardType="decimal-pad"
-          />
-          <Pressable style={styles.unitPill} onPress={() => setUnitIndex((i) => (i + 1) % PORTION_UNITS.length)}>
-            <Text style={typography.body}>{PORTION_UNITS[unitIndex]}</Text>
-            <Text style={{ color: colors.textTertiary, marginLeft: 6 }}>▾</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScreenContainer>
+        <View style={styles.backRow}>
+          <Pressable onPress={() => router.push('/(tabs)/scan')} hitSlop={12}>
+            <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
+          <Text style={styles.title}>스캔 결과</Text>
         </View>
-      </Card>
 
-      <View style={[styles.statusCard, { backgroundColor: meta.bg, borderColor: meta.border }]}>
-        <View style={{ alignItems: 'center', width: 64 }}>
-          <View style={[styles.statusIconCircle, { backgroundColor: meta.iconBg }]}>
-            <Text style={styles.statusIconText}>{meta.icon}</Text>
-          </View>
-          <Text style={[typography.bodyBold, { color: meta.border, marginTop: 6 }]}>{meta.label}</Text>
-        </View>
-        <View style={styles.statusDivider} />
-        <View style={{ flex: 1 }}>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>누적 섭취량 기준</Text>
-          <Text style={[typography.h3, { color: meta.border, marginTop: 2 }]}>{meta.title}</Text>
-          <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4 }]}>{meta.desc}</Text>
-        </View>
-      </View>
-
-      <Card style={{ marginTop: spacing.md }}>
-        <Text style={typography.h3}>주요 영양 정보</Text>
-        <View style={styles.nutrientGrid}>
-          {nutrients.map((n) => {
-            const tone = nutrientTone(n.label, n.raw);
-            return (
-              <View key={n.label} style={styles.nutrientBox}>
-                <Text style={styles.nutrientIcon}>{NUTRIENT_EMOJI[n.label]}</Text>
-                <Text style={[typography.bodyBold, { marginTop: 6 }]}>{n.label}</Text>
-                <Text style={[typography.caption, { color: colors.textSecondary }]}>{n.value}</Text>
-                <Text style={[typography.captionBold, { color: tone.text, marginTop: 2 }]}>{tone.label}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </Card>
-
-      {level === 'danger' && (
-        <View style={{ marginTop: spacing.md }}>
-          <Button
-            label="대체 메뉴 보기"
-            variant="outline"
-            onPress={() => router.push({ pathname: '/food-alternatives', params: { productName } })}
-          />
-        </View>
-      )}
-
-      <View style={{ marginTop: spacing.lg }}>
-        <Button label="오늘의 섭취에 추가" onPress={handleAdd} />
-      </View>
-
-      <Pressable
-        style={{ marginTop: spacing.md, marginBottom: spacing.lg, alignItems: 'center' }}
-        onPress={() => router.push('/(tabs)/scan')}
-      >
-        <Text style={[typography.bodyBold, { color: colors.primary, textDecorationLine: 'underline' }]}>
-          다시 스캔하기
+        <Text style={[typography.body, { color: colors.textSecondary, marginBottom: spacing.md }]}>
+          영양 성분표 인식이 완료되었어요!
         </Text>
-      </Pressable>
-    </ScreenContainer>
+
+        <Card>
+          <Text style={typography.h3}>주요 영양 정보</Text>
+          <View style={styles.nutrientGrid}>
+            {nutrients.map((n) => {
+              const tone = nutrientTone(n.label, n.raw);
+              return (
+                <View key={n.label} style={styles.nutrientBox}>
+                  <Text style={styles.nutrientIcon}>{NUTRIENT_EMOJI[n.label]}</Text>
+                  <Text style={[typography.bodyBold, { marginTop: 6 }]}>{n.label}</Text>
+                  <Text style={[typography.caption, { color: colors.textSecondary }]}>{n.value}</Text>
+                  <Text style={[typography.captionBold, { color: tone.text, marginTop: 2 }]}>{tone.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </Card>
+
+        <Card style={{ marginTop: spacing.md }}>
+          <Text style={typography.bodyBold}>섭취량</Text>
+          <View style={styles.portionRow}>
+            <TextInput
+              style={styles.portionInput}
+              value={portion}
+              onChangeText={setPortion}
+              keyboardType="decimal-pad"
+            />
+            <Pressable style={styles.unitPill} onPress={() => setUnitPickerOpen(true)}>
+              <Text style={typography.body}>{unit}</Text>
+              <Text style={{ color: colors.textTertiary, marginLeft: 6 }}>▾</Text>
+            </Pressable>
+          </View>
+        </Card>
+
+        <View style={[styles.statusCard, { backgroundColor: meta.bg, borderColor: meta.border }]}>
+          <View style={{ alignItems: 'center', width: 64 }}>
+            <View style={[styles.statusIconCircle, { backgroundColor: meta.iconBg }]}>
+              <Text style={styles.statusIconText}>{meta.icon}</Text>
+            </View>
+            <Text style={[typography.bodyBold, { color: meta.border, marginTop: 6 }]}>{meta.label}</Text>
+          </View>
+          <View style={styles.statusDivider} />
+          <View style={{ flex: 1 }}>
+            <Text style={[typography.caption, { color: colors.textSecondary }]}>누적 섭취량 기준</Text>
+            <Text style={[typography.h3, { color: meta.border, marginTop: 2 }]}>{meta.title}</Text>
+            <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4 }]}>{meta.desc}</Text>
+          </View>
+        </View>
+
+        <Card style={{ marginTop: spacing.md }}>
+          <Text style={[typography.caption, { color: colors.textSecondary, marginBottom: 6 }]}>
+            '오늘의 섭취'에 기록하기 위해 음식명을 입력해주세요 :)
+          </Text>
+          <TextInput
+            style={styles.nameInput}
+            value={productName}
+            onChangeText={setProductName}
+            placeholder="예: 유기농 그릭 요거트"
+            placeholderTextColor={colors.textTertiary}
+          />
+          <View style={styles.metaRow}>
+            <Text style={[typography.caption, { color: colors.textTertiary, width: 68 }]}>스캔 시간</Text>
+            <Text style={typography.body}>{scannedAt}</Text>
+          </View>
+        </Card>
+
+        {level === 'danger' && (
+          <View style={{ marginTop: spacing.md }}>
+            <Button
+              label="대체 메뉴 보기"
+              variant="outline"
+              onPress={() => router.push({ pathname: '/food-alternatives', params: { productName } })}
+            />
+          </View>
+        )}
+
+        <View style={{ marginTop: spacing.lg }}>
+          <Button label="오늘의 섭취에 추가" onPress={handleAdd} disabled={!productName.trim()} />
+        </View>
+
+        <Pressable
+          style={{ marginTop: spacing.md, marginBottom: spacing.lg, alignItems: 'center' }}
+          onPress={() => router.push('/(tabs)/scan')}
+        >
+          <Text style={[typography.bodyBold, { color: colors.primary, textDecorationLine: 'underline' }]}>
+            다시 스캔하기
+          </Text>
+        </Pressable>
+      </ScreenContainer>
+
+      <Modal visible={unitPickerOpen} transparent animationType="fade" onRequestClose={() => setUnitPickerOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setUnitPickerOpen(false)}>
+          <View style={styles.modalSheet}>
+            <Text style={[typography.bodyBold, { marginBottom: spacing.sm }]}>섭취 단위 선택</Text>
+            {PORTION_UNITS.map((u) => (
+              <Pressable
+                key={u}
+                style={[styles.modalRow, u === unit && styles.modalRowActive]}
+                onPress={() => {
+                  setUnit(u);
+                  setUnitPickerOpen(false);
+                }}
+              >
+                <Text style={[typography.body, u === unit && { color: colors.primary, fontWeight: '700' }]}>{u}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -207,6 +249,17 @@ const styles = StyleSheet.create({
     color: TITLE_COLOR,
   },
   metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
+  nameInput: {
+    height: 48,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgWhite,
+    paddingHorizontal: spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.primary,
+  },
   portionRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -268,4 +321,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   nutrientIcon: { fontSize: 22 },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalSheet: {
+    width: '78%',
+    maxHeight: '70%',
+    backgroundColor: colors.bgWhite,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  modalRow: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.divider,
+  },
+  modalRowActive: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.sm,
+    paddingHorizontal: 8,
+  },
 });

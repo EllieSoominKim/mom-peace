@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import { analyzeNutritionLabel, ApiError } from '../../lib/api';
 import { colors } from '../../theme/colors';
 import { radius, spacing, typography } from '../../theme/typography';
 
@@ -12,10 +13,39 @@ const TITLE_COLOR = '#6A3A25';
 
 export default function NutritionScan() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [captured, setCaptured] = useState(false);
+  const cameraRef = useRef<CameraView>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const goToResult = () => {
-    router.push({ pathname: '/scan-result', params: { source: 'ocr' } });
+  const goToResultWithMock = () => {
+    router.push({ pathname: '/scan-result', params: { source: 'ocr-mock' } });
+  };
+
+  const captureAndAnalyze = async () => {
+    if (!cameraRef.current) return;
+    setError(null);
+    setAnalyzing(true);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
+      if (!photo?.base64) throw new Error('사진을 가져오지 못했어요');
+
+      const result = await analyzeNutritionLabel(photo.base64, 'image/jpeg');
+
+      router.push({
+        pathname: '/scan-result',
+        params: {
+          source: 'ocr',
+          productName: result.productName || undefined,
+          kcal: String(result.kcal),
+          carbG: String(result.carbG),
+          sugarG: String(result.sugarG),
+        },
+      });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '분석 중 문제가 생겼어요. 다시 시도해주세요.');
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   return (
@@ -37,7 +67,7 @@ export default function NutritionScan() {
             <View style={styles.centerBox}>
               <Text style={{ fontSize: 32 }}>📷</Text>
               <Text style={[typography.caption, { color: colors.textSecondary, marginTop: spacing.sm, textAlign: 'center' }]}>
-                웹 미리보기에서는 카메라 촬영 대신{'\n'}아래 "결과 확인하기"로 흐름을 확인해주세요
+                웹 미리보기에서는 실제 촬영이 안 돼요{'\n'}아래 버튼으로 흐름만 확인해주세요
               </Text>
             </View>
           ) : !permission ? null : !permission.granted ? (
@@ -58,11 +88,25 @@ export default function NutritionScan() {
               )}
             </View>
           ) : (
-            <CameraView style={{ flex: 1 }} facing="back" onCameraReady={() => setCaptured(true)} />
+            <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
           )}
         </View>
-        <Text style={styles.scanningLabel}>스캔 중</Text>
+
+        {analyzing ? (
+          <View style={styles.scanningRow}>
+            <ActivityIndicator color={colors.primary} size="small" />
+            <Text style={[styles.scanningLabel, { marginTop: 0, marginLeft: 8 }]}>영양정보를 읽고 있어요...</Text>
+          </View>
+        ) : (
+          <Text style={styles.scanningLabel}>사진을 찍어 영양정보를 확인하세요</Text>
+        )}
       </Card>
+
+      {!!error && (
+        <Text style={[typography.caption, { color: colors.danger, marginTop: spacing.sm, textAlign: 'center' }]}>
+          {error}
+        </Text>
+      )}
 
       <View style={styles.cautionCard}>
         <Text style={[typography.captionBold, { color: colors.primary }]}>
@@ -85,7 +129,11 @@ export default function NutritionScan() {
       </View>
 
       <View style={{ marginTop: spacing.lg }}>
-        <Button label="결과 확인하기" onPress={goToResult} />
+        <Button
+          label={analyzing ? '분석 중...' : '결과 확인하기'}
+          onPress={Platform.OS === 'web' ? goToResultWithMock : captureAndAnalyze}
+          loading={analyzing}
+        />
       </View>
 
       <Pressable
@@ -123,6 +171,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     overflow: 'hidden',
     backgroundColor: colors.bgSoft,
+  },
+  scanningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
   },
   scanningLabel: {
     ...typography.bodyBold,

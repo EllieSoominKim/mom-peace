@@ -1,7 +1,15 @@
 import { Platform } from 'react-native';
 
+/**
+ * 백엔드 서버 주소.
+ *
+ * - 웹(브라우저)에서 테스트할 때는 localhost로 자동 연결됩니다.
+ * - 휴대폰 Expo Go에서 테스트할 때는 컴퓨터의 LAN IP로 직접 바꿔줘야 해요.
+ *   (PowerShell에서 `ipconfig` 실행 → IPv4 주소 확인 후 아래 값 교체)
+ */
 export const API_BASE_URL =
   Platform.OS === 'web' ? 'http://localhost:8000' : 'http://172.30.1.85:8000';
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -12,13 +20,22 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   let res: Response;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000); // 25초 타임아웃 (영양성분표 이미지 분석은 시간이 더 걸릴 수 있음)
+
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       ...options,
     });
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new ApiError(0, '서버 응답이 너무 오래 걸려요. 백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
+    }
     throw new ApiError(0, '서버에 연결할 수 없어요. 백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!res.ok) {
@@ -63,5 +80,25 @@ export function sendChatMessage(
   return request<{ reply: string }>('/chat', {
     method: 'POST',
     body: JSON.stringify({ message, pregnancyWeek, context }),
+  });
+}
+
+// ---- 영양성분표 OCR ----
+
+export type NutritionOcrResult = {
+  productName: string;
+  totalContent: number;
+  kcal: number;
+  carbG: number;
+  sugarG: number;
+  sodiumMg: number;
+  fatG: number;
+  proteinG: number;
+};
+
+export function analyzeNutritionLabel(imageBase64: string, mimeType = 'image/jpeg'): Promise<NutritionOcrResult> {
+  return request<NutritionOcrResult>('/nutrition/ocr', {
+    method: 'POST',
+    body: JSON.stringify({ imageBase64, mimeType }),
   });
 }
