@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "맘편하게",
+    "slug": "mompeace",
+    "scheme": "mompeace",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FEFAF9"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "@react-native-community/datetimepicker",
+      "expo-font"
+    ],
+    "android": {
+      "package": "com.mompeace.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FEFAF9"
+      }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}

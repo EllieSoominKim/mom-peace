@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+mompeace.db
+*.log
+.DS_Store
