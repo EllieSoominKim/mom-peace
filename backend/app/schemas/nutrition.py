@@ -1,6 +1,22 @@
 from app.schemas.base import CamelModel
 
 
+class CafeMenuItem(CamelModel):
+    id: str
+    brand: str | None = None
+    name: str
+    is_generic: bool = False
+    caffeine_mg: float
+    sugar_g: float
+    carb_g: float
+    kcal: float
+
+
+class CafeSearchResponse(CamelModel):
+    query: str
+    results: list[CafeMenuItem]
+
+
 class NutritionOcrRequest(CamelModel):
     image_base64: str
     mime_type: str = "image/jpeg"

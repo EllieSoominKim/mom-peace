@@ -40,6 +40,7 @@ export default function RootLayout() {
             <Stack.Screen name="scan-result" options={{ presentation: 'card' }} />
             <Stack.Screen name="food-search" />
             <Stack.Screen name="food-alternatives" />
+            <Stack.Screen name="caffeine-today" />
             <Stack.Screen name="chat-modal" options={{ presentation: 'modal' }} />
           </Stack>
         </WebPhoneFrame>

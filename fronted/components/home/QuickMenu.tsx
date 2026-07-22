@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { radius, spacing, typography } from '../../theme/typography';
 
-// TODO: '오늘의 카페인'은 아직 전용 화면이 없어서 임시로 Food Diary 탭으로 연결해둠.
 const ITEMS = [
   {
     icon: require('../../assets/icons/barcode.png'),
@@ -16,7 +15,7 @@ const ITEMS = [
     icon: require('../../assets/icons/menu.png'),
     title: '오늘의 카페인',
     desc: '카페인 권장량 기준',
-    href: '/(tabs)/diary',
+    href: '/caffeine-today',
   },
 ] as const;
 
