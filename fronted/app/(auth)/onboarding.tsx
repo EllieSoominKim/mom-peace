@@ -18,6 +18,17 @@ function formatDate(date: Date) {
   return `${y}.${m}.${d}.`;
 }
 
+// 안전한 Date 파싱 함수
+function parseDateString(dateStr: string): Date {
+  try {
+    const cleaned = dateStr.replace(/\.$/, '').replace(/\./g, '-');
+    const date = new Date(cleaned);
+    return isNaN(date.getTime()) ? new Date() : date;
+  } catch {
+    return new Date();
+  }
+}
+
 export default function Onboarding() {
   const { saveOnboarding } = useUser();
   const [week, setWeek] = useState('21');
@@ -94,29 +105,32 @@ export default function Onboarding() {
           </View>
           <Text style={[typography.bodyBold, { color: DARK }]}>출산 예정일</Text>
         </View>
-        <View style={styles.dateInputRow}>
-          <Text style={[typography.h3, { color: colors.textPrimary }]}>{dueDate}</Text>
-          <Pressable onPress={() => router.replace('/(auth)/register')} hitSlop={12}>
-            <Image
-              source={require('../../assets/images/calender_gray.png')}
-              style={styles.calendarIcon}
-              resizeMode="contain"
-            />
-          </Pressable>
-        </View>
 
-        {showPicker && (
-          <DateTimePicker
-            value={new Date(dueDate.replace(/\.$/, '').replace(/\./g, '-'))}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
-            onChange={handleDateChange}
-            accentColor={colors.primary}
-            themeVariant="light"
+        {/* 출산 예정일 선택 영역 (전체 영역 또는 아이콘 클릭 시 달력 열기) */}
+        <Pressable style={styles.dateInputRow} onPress={() => setShowPicker(true)}>
+          <Text style={[typography.h3, { color: colors.textPrimary }]}>{dueDate}</Text>
+          <Image
+            source={require('../../assets/images/calender_gray.png')}
+            style={styles.calendarIcon}
+            resizeMode="contain"
           />
-        )}
-        {showPicker && Platform.OS === 'ios' && (
-          <Button label="선택 완료" variant="ghost" onPress={() => setShowPicker(false)} />
+        </Pressable>
+
+        {/* 달력 피커 */}
+        {showPicker && (
+          <View style={styles.pickerContainer}>
+            <DateTimePicker
+              value={parseDateString(dueDate)}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              onChange={handleDateChange}
+              accentColor={colors.primary}
+              themeVariant="light"
+            />
+            {Platform.OS === 'ios' && (
+              <Button label="선택 완료" variant="ghost" onPress={() => setShowPicker(false)} />
+            )}
+          </View>
         )}
 
         <View style={styles.infoBox}>
@@ -190,6 +204,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   calendarIcon: { width: 22, height: 22 },
+  pickerContainer: {
+    marginTop: spacing.sm,
+  },
   infoBox: {
     marginTop: spacing.md,
     backgroundColor: colors.bgSoft,

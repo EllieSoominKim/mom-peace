@@ -47,7 +47,10 @@ export default function TabsLayout() {
 
       <Tabs.Screen name="scan" options={{ href: null }} />
       <Tabs.Screen name="community/write" options={{ href: null }} />
-      <Tabs.Screen name="community/[id]" options={{ href: null }} />
+      <Tabs.Screen
+        name="community/[id]"
+        options={{ href: null, tabBarHideOnKeyboard: true }}
+      />
     </Tabs>
   );
 }

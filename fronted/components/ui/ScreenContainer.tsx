@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Edge, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { PHONE_CONTENT_HEIGHT } from './WebPhoneFrame';
@@ -12,6 +12,7 @@ type Props = {
   paddingHorizontal?: number;
   variant?: 'flat' | 'gradient';
   growWhenShort?: boolean;
+  edges?: Edge[];
 };
 
 const webMinHeight = Platform.OS === 'web' ? PHONE_CONTENT_HEIGHT : undefined;
@@ -23,6 +24,7 @@ export default function ScreenContainer({
   paddingHorizontal = 20,
   variant = 'flat',
   growWhenShort = false,
+  edges = ['top', 'bottom', 'left', 'right'],
 }: Props) {
   const Wrapper = scroll ? ScrollView : View;
 
@@ -51,12 +53,16 @@ export default function ScreenContainer({
   if (variant === 'gradient') {
     return (
       <LinearGradient colors={[colors.primarySoft, colors.bg]} style={{ flex: 1, minHeight: webMinHeight }}>
-        <SafeAreaView style={{ flex: 1, minHeight: webMinHeight }}>{content}</SafeAreaView>
+        <SafeAreaView edges={edges} style={{ flex: 1, minHeight: webMinHeight }}>{content}</SafeAreaView>
       </LinearGradient>
     );
   }
 
-  return <SafeAreaView style={[styles.safe, { minHeight: webMinHeight }]}>{content}</SafeAreaView>;
+  return (
+    <SafeAreaView edges={edges} style={[styles.safe, { minHeight: webMinHeight }]}>
+      {content}
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

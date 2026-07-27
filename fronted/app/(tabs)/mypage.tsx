@@ -1,79 +1,344 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Pressable,
+  Image,
+  Alert,
+  Modal,
+  TextInput,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import ScreenContainer from '../../components/ui/ScreenContainer';
-import Card from '../../components/ui/Card';
-import { colors } from '../../theme/colors';
-import { radius, spacing, typography } from '../../theme/typography';
 import { useUser } from '../../context/UserContext';
 
-const MENU = [
-  { icon: '👤', label: '정보 수정' },
-  { icon: '📔', label: '알림 설정' },
-  { icon: '👑', label: 'Premium' },
-];
+export default function MyPageScreen() {
+  const router = useRouter();
+  const userContext = useUser() as any;
+  const user = userContext?.user;
+  const logout = userContext?.logout || (() => {});
+  const updateUser = userContext?.updateUser || userContext?.setUser || (() => {});
 
-export default function MyPage() {
-  const { user, logout } = useUser();
+  // 정보 수정 모달 상태
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [nickname, setNickname] = useState<string>(user?.nickname || '맘토리');
+  const [weeks, setWeeks] = useState<string>(String(user?.pregnancyWeeks ?? 21));
+  const [days, setDays] = useState<string>(String(user?.pregnancyDays ?? 3));
+  const [dueDate, setDueDate] = useState<string>(user?.dueDate || '2026-12-07');
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
+  const handleSaveInfo = () => {
+    if (updateUser) {
+      updateUser({
+        ...user,
+        nickname,
+        pregnancyWeeks: Number(weeks) || 0,
+        pregnancyDays: Number(days) || 0,
+        dueDate,
+      });
+    }
+    setIsEditModalOpen(false);
   };
 
-  return (
-    <ScreenContainer>
-      <Text style={[typography.h2, { marginTop: spacing.md, marginBottom: spacing.md }]}>맘 편하게</Text>
+  const handleLogout = () => {
+    Alert.alert('로그아웃', '정말 로그아웃 하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '로그아웃',
+        style: 'destructive',
+        onPress: () => {
+          logout();
+          // 회원가입/로그인 시작 화면으로 이동
+          router.replace('/(auth)/welcome');
+        },
+      },
+    ]);
+  };
 
-      <Card style={styles.profile}>
-        <View style={styles.avatar}>
-          <Text style={{ fontSize: 24 }}>🤰</Text>
+  // ScreenContainer 안전 처리 (기본 View 대체)
+  const ContainerComponent = ScreenContainer || View;
+
+  return (
+    <ContainerComponent style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 상단 로고 & 타이틀 */}
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/mompeace_full_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>마이 페이지</Text>
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={typography.bodyBold}>{user?.nickname ?? '회원'}님</Text>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>
-            {user?.week ? `${user.week}주 ${user.day}일` : '기본 정보 미입력'}
-            {user?.dueDate ? ` · 예정일 ${user.dueDate}` : ''}
+
+        {/* 프로필 카드 */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileHeader}>
+            <Text style={styles.profileName}>
+              {user?.nickname || nickname || '맘토리'}님👶 👑
+            </Text>
+          </View>
+          <Text style={styles.profileSub}>
+            {user?.pregnancyWeeks ?? weeks}주 {user?.pregnancyDays ?? days}일 · 예정일 D-133
           </Text>
         </View>
-      </Card>
 
-      <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-        {MENU.map((m) => (
-          <Pressable key={m.label}>
-            <Card style={styles.menuRow} padding={16}>
-              <Text style={{ fontSize: 18 }}>{m.icon}</Text>
-              <Text style={[typography.body, { flex: 1 }]}>{m.label}</Text>
-              <Text style={{ color: colors.textTertiary }}>›</Text>
-            </Card>
+        {/* 메뉴 목록 */}
+        <View style={styles.menuContainer}>
+          {/* 정보 수정 */}
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => setIsEditModalOpen(true)}
+          >
+            <View style={[styles.iconBox, { backgroundColor: '#FFF0F0' }]}>
+              <Image
+                source={require('../../assets/images/calender.png')}
+                style={styles.menuIconImage}
+                resizeMode="contain"
+              />
+            </View>
+            <View style={styles.menuTextContainer}>
+              <Text style={styles.menuTitle}>정보 수정</Text>
+              <Text style={styles.menuSub}>임신 주차 및 예정일 수정</Text>
+            </View>
+            <Text style={styles.chevron}>›</Text>
           </Pressable>
-        ))}
-      </View>
+        </View>
 
-      <Card style={[styles.premium, { marginTop: spacing.md }]}>
-        <Text style={[typography.bodyBold, { color: colors.textOnPrimary }]}>Premium 🎗</Text>
-        <Text style={[typography.caption, { color: colors.textOnPrimary, marginTop: 4 }]}>
-          주간 리포트, 무제한 스캔 기록을 확인해보세요
-        </Text>
-      </Card>
+        {/* 로그아웃 버튼 */}
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>로그아웃 하기</Text>
+        </Pressable>
 
-      <Pressable onPress={handleLogout} style={{ marginTop: spacing.lg, alignItems: 'center' }}>
-        <Text style={[typography.body, { color: colors.textTertiary }]}>로그아웃</Text>
-      </Pressable>
-    </ScreenContainer>
+        {/* 정보 수정 모달 */}
+        <Modal visible={isEditModalOpen} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>정보 수정</Text>
+
+              <Text style={styles.inputLabel}>닉네임</Text>
+              <TextInput
+                style={styles.input}
+                value={nickname}
+                onChangeText={setNickname}
+              />
+
+              <View style={styles.rowInput}>
+                <View style={styles.halfInputContainer}>
+                  <Text style={styles.inputLabel}>임신 주차 (주)</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="number-pad"
+                    value={weeks}
+                    onChangeText={setWeeks}
+                  />
+                </View>
+                <View style={styles.halfInputContainer}>
+                  <Text style={styles.inputLabel}>일수 (일)</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="number-pad"
+                    value={days}
+                    onChangeText={setDays}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.inputLabel}>출산 예정일 (YYYY-MM-DD)</Text>
+              <TextInput
+                style={styles.input}
+                value={dueDate}
+                onChangeText={setDueDate}
+              />
+
+              <View style={styles.modalButtons}>
+                <Pressable
+                  style={[styles.modalBtn, styles.cancelBtn]}
+                  onPress={() => setIsEditModalOpen(false)}
+                >
+                  <Text style={styles.cancelBtnText}>취소</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalBtn, styles.saveBtn]}
+                  onPress={handleSaveInfo}
+                >
+                  <Text style={styles.saveBtnText}>저장</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </ContainerComponent>
   );
 }
 
 const styles = StyleSheet.create({
-  profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 40,
+    backgroundColor: '#FFFFFF',
   },
-  menuRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  premium: { backgroundColor: colors.primary },
+  header: {
+    marginBottom: 20,
+  },
+  logo: {
+    height: 36,
+    width: 140,
+    marginBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111111',
+  },
+  profileCard: {
+    backgroundColor: '#FFF5F5',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#FFE3E3',
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  profileSub: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  menuContainer: {
+    gap: 12,
+    marginBottom: 32,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  menuIconImage: {
+    width: 24,
+    height: 24,
+  },
+  menuTextContainer: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222222',
+    marginBottom: 2,
+  },
+  menuSub: {
+    fontSize: 13,
+    color: '#888888',
+  },
+  chevron: {
+    fontSize: 22,
+    color: '#C4C4C4',
+    fontWeight: '300',
+  },
+  logoutButton: {
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  logoutText: {
+    fontSize: 14,
+    color: '#888888',
+    textDecorationLine: 'underline',
+  },
+
+  /* Modal Styles */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111111',
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    color: '#666666',
+    marginBottom: 6,
+    marginTop: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    backgroundColor: '#FAFAFA',
+  },
+  rowInput: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  halfInputContainer: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    gap: 10,
+  },
+  modalBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+  cancelBtn: {
+    backgroundColor: '#F2F2F2',
+  },
+  cancelBtnText: {
+    color: '#666666',
+    fontWeight: '600',
+  },
+  saveBtn: {
+    backgroundColor: '#FF6B6B',
+  },
+  saveBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
 });

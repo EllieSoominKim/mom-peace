@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import ScreenContainer from '../../../components/ui/ScreenContainer';
 import PostCard from '../../../components/community/PostCard';
@@ -8,6 +8,7 @@ import { colors } from '../../../theme/colors';
 import { radius, spacing, typography } from '../../../theme/typography';
 
 const CATEGORIES = ['전체', '나눔', '판매', '질문'] as const;
+const TITLE_COLOR = '#6A3A25';
 
 export default function CommunityList() {
   const [active, setActive] = useState<(typeof CATEGORIES)[number]>('전체');
@@ -18,7 +19,12 @@ export default function CommunityList() {
   return (
     <ScreenContainer scroll={false}>
       <View style={styles.header}>
-        <Text style={typography.h2}>커뮤니티</Text>
+        <View style={styles.titleRow}>
+          <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
+            <Image source={require('../../../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
+          </Pressable>
+          <Text style={styles.title}>커뮤니티</Text>
+        </View>
         <Pressable style={styles.writeBtn} onPress={() => router.push('/(tabs)/community/write')}>
           <Text style={[typography.captionBold, { color: colors.textOnPrimary }]}>+ 글쓰기</Text>
         </Pressable>
@@ -50,8 +56,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,   // spacing.md → spacing.sm
     marginBottom: spacing.sm,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+  },
+  title: {
+    ...typography.h1,
+    fontSize: 20,
+    color: TITLE_COLOR,
   },
   writeBtn: {
     backgroundColor: colors.primary,

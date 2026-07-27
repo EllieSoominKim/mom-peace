@@ -1,10 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
 import Card from '../ui/Card';
 import { colors } from '../../theme/colors';
 import { radius, spacing, typography } from '../../theme/typography';
 
-type Item = { icon: string; title: string; desc: string; href: string };
+type Item = { icon: ImageSourcePropType; title: string; desc: string; href: string };
 
 export default function TodayCareCard({ exercise, nutrient }: { exercise: Item; nutrient: Item }) {
   const items = [exercise, nutrient];
@@ -14,7 +14,7 @@ export default function TodayCareCard({ exercise, nutrient }: { exercise: Item; 
       <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
         {items.map((item) => (
           <View key={item.title} style={styles.subBox}>
-            <Text style={{ fontSize: 20, marginBottom: 6 }}>{item.icon}</Text>
+            <Image source={item.icon} style={styles.icon} resizeMode="contain" />
             <Text style={typography.bodyBold}>{item.title}</Text>
             <Text style={[typography.small, styles.desc]} numberOfLines={2}>
               {item.desc}
@@ -35,5 +35,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  icon: { width: 24, height: 24, marginBottom: 6 },
   desc: { color: colors.textSecondary, marginTop: 4 },
 });

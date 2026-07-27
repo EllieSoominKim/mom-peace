@@ -5,7 +5,7 @@ import HeroCard from '../../components/home/HeroCard';
 import IntakeSummaryCard from '../../components/home/IntakeSummaryCard';
 import QuickMenu from '../../components/home/QuickMenu';
 import TodayCareCard from '../../components/home/TodayCareCard';
-import { todayIntake, todayGuide } from '../../constants/mock-data';
+import { todayIntake, getTodayGuide } from '../../constants/mock-data';
 import { useUser } from '../../context/UserContext';
 import { useDiary, DAILY_LIMITS } from '../../context/DiaryContext';
 
@@ -23,6 +23,7 @@ export default function Home() {
   const { user } = useUser();
   const { entries, caffeineTotal, sugarTotal, carbTotal } = useDiary();
   const hasEntries = entries.length > 0;
+  const todayGuide = getTodayGuide(user?.week ?? 0);
 
   return (
     <ScreenContainer>
@@ -42,8 +43,8 @@ export default function Home() {
       />
       <QuickMenu />
       <TodayCareCard
-        exercise={{ icon: '🚶‍♀️', href: '/(tabs)/home', ...todayGuide.exercise }}
-        nutrient={{ icon: '🥬', href: '/(tabs)/home', ...todayGuide.nutrient }}
+        exercise={{ icon: require('../../assets/icons/home_exercise.png'), href: '/(tabs)/home', ...todayGuide.exercise }}
+        nutrient={{ icon: require('../../assets/icons/home_medicine.png'), href: '/(tabs)/home', ...todayGuide.nutrient }}
       />
     </ScreenContainer>
   );
