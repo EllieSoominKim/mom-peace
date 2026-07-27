@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChatScreenContent } from '../../components/chat/ChatScreenContent';
+import { colors } from '../../theme/colors';
 
 export default function ChatTabScreen() {
   return (
@@ -14,6 +15,6 @@ export default function ChatTabScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F7',
+    backgroundColor: colors.bg,
   },
 });

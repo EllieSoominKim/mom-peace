@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { colors } from '../../theme/colors';
+import { spacing, typography } from '../../theme/typography';
 import { sendChatMessage } from '../../lib/api';
 
 interface Message {
@@ -36,12 +37,10 @@ export function ChatScreenContent() {
     {
       id: '1',
       sender: 'ai',
-      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :) 오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
+      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :)\n오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
     },
   ]);
-  consgit mv fronted frontend
-git commit -m "rename fronted to frontend"
-git pusht [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -107,20 +106,16 @@ git pusht [inputText, setInputText] = useState('');
 
   return (
     <View style={styles.container}>
-      {/* 상단 헤더 (back.png 버튼 포함) */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={handleGoHome}
-          activeOpacity={0.7}
-        >
+      {/* 상단 헤더 (다른 화면과 동일한 back.png + title 패턴) */}
+      <View style={styles.backRow}>
+        <TouchableOpacity onPress={handleGoHome} hitSlop={12} activeOpacity={0.7}>
           <Image
             source={require('../../assets/images/back.png')}
-            style={styles.backIcon}
+            style={{ width: 24, height: 24 }}
             resizeMode="contain"
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>맘편하게 챗봇</Text>
+        <Text style={styles.title}>맘편하게 챗봇</Text>
       </View>
 
       {/* 메시지 스크롤 영역 */}
@@ -224,31 +219,19 @@ git pusht [inputText, setInputText] = useState('');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F7',
+    backgroundColor: colors.bg,
   },
-  header: {
-    height: 52,
+  backRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
     paddingHorizontal: 16,
-    backgroundColor: '#FAF8F7',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0EBE8',
+    paddingTop: spacing.sm,
+    paddingBottom: 12,
   },
-  backButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backIcon: {
-    width: 24,
-    height: 24,
-  },
-  headerTitle: {
+  title: {
+    ...typography.h1,
     fontSize: 20,
-    fontWeight: '700',
     color: '#6A3A25',
   },
   chatArea: {
@@ -320,7 +303,7 @@ const styles = StyleSheet.create({
   },
   chipSection: {
     paddingVertical: 8,
-    backgroundColor: '#FAF8F7',
+    backgroundColor: colors.bg,
   },
   chipScrollContainer: {
     paddingHorizontal: 16,
@@ -345,7 +328,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
-    backgroundColor: '#FAF8F7',
+    backgroundColor: colors.bg,
     gap: 8,
   },
   input: {

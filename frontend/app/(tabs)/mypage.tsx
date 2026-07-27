@@ -13,6 +13,9 @@ import {
 import { useRouter } from 'expo-router';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import { useUser } from '../../context/UserContext';
+import { spacing, typography } from '../../theme/typography';
+
+const TITLE_COLOR = '#6A3A25';
 
 export default function MyPageScreen() {
   const router = useRouter();
@@ -81,16 +84,16 @@ export default function MyPageScreen() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* 상단 헤더 */}
-        <View style={styles.header}>
+        {/* 상단 헤더 (다른 화면과 동일한 back.png + title 패턴) */}
+        <View style={styles.backRow}>
           <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
             <Image
               source={require('../../assets/images/back.png')}
-              style={styles.backIcon}
+              style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
           </Pressable>
-          <Text style={styles.headerTitle}>마이 페이지</Text>
+          <Text style={styles.title}>마이 페이지</Text>
         </View>
 
         {/* 프로필 카드 */}
@@ -198,23 +201,20 @@ export default function MyPageScreen() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 0,
     paddingBottom: 40,
   },
-  header: {
+  backRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 20,
+    gap: spacing.sm,
+    paddingTop: spacing.sm,
+    marginBottom: spacing.md,
   },
-  backIcon: {
-    width: 24,
-    height: 24,
-  },
-  headerTitle: {
+  title: {
+    ...typography.h1,
     fontSize: 20,
-    fontWeight: '700',
-    color: '#6A3A25',
+    color: TITLE_COLOR,
   },
   profileCard: {
     backgroundColor: '#FFF5F5',
