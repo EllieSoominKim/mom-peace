@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
 import { sendChatMessage } from '../../lib/api';
 
@@ -32,7 +31,6 @@ const QUICK_RECOMMENDATIONS = [
 
 export function ChatScreenContent() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -121,7 +119,6 @@ export function ChatScreenContent() {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>맘편하게 챗봇</Text>
-        <View style={styles.headerRightSpacer} />
       </View>
 
       {/* 메시지 스크롤 영역 */}
@@ -196,16 +193,8 @@ export function ChatScreenContent() {
         </ScrollView>
       </View>
 
-      {/* 하단 입력창 (하단 여백 패딩 보정) */}
-      <View
-        style={[
-          styles.inputContainer,
-          {
-            paddingBottom: Math.max(insets.bottom, 10),
-            marginBottom: Math.max(0, keyboardHeight - 65),
-          },
-        ]}
-      >
+      {/* 하단 입력창 (게시글 댓글 입력창과 동일한 방식: 키보드 높이만큼만 밀어 올림) */}
+      <View style={[styles.inputContainer, { marginBottom: keyboardHeight }]}>
         <TextInput
           style={styles.input}
           placeholder="메시지를 입력하세요"
@@ -239,29 +228,26 @@ const styles = StyleSheet.create({
     height: 52,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
     paddingHorizontal: 16,
     backgroundColor: '#FAF8F7',
     borderBottomWidth: 1,
     borderBottomColor: '#F0EBE8',
   },
   backButton: {
-    width: 36,
-    height: 36,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   backIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#222',
-  },
-  headerRightSpacer: {
-    width: 36,
+    color: '#6A3A25',
   },
   chatArea: {
     flex: 1,
@@ -356,6 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,
+    paddingBottom: 12,
     backgroundColor: '#FAF8F7',
     gap: 8,
   },

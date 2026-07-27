@@ -23,15 +23,20 @@ export default function Home() {
   const { user } = useUser();
   const { entries, caffeineTotal, sugarTotal, carbTotal } = useDiary();
   const hasEntries = entries.length > 0;
-  const todayGuide = getTodayGuide(user?.week ?? 0);
+
+  // week/pregnancyWeeks 호환 처리
+  const currentWeek = user?.week ?? user?.pregnancyWeeks ?? 0;
+  const currentDay = user?.day ?? user?.pregnancyDays ?? 0;
+
+  const todayGuide = getTodayGuide(currentWeek);
 
   return (
     <ScreenContainer>
       <HomeHeader />
       <HeroCard
         name={user?.nickname ?? '회원'}
-        week={user?.week ?? 0}
-        day={user?.day ?? 0}
+        week={currentWeek}
+        day={currentDay}
         dateLabel={todayLabel()}
         dueDate={user?.dueDate ?? ''}
       />

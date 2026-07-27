@@ -7,7 +7,10 @@ export type UserProfile = {
   nickname: string;
   week: number;
   day: number;
-  dueDate: string; // "2026.10.26"
+  dueDate: string; // 예: "2026-12-07" 또는 "2026.10.26"
+  // 마이페이지와의 호환성을 위한 선택적 호환 프로퍼티
+  pregnancyWeeks?: number;
+  pregnancyDays?: number;
 };
 
 type AccountsMap = Record<string, UserProfile>; // key: id
@@ -19,6 +22,12 @@ type RegisterResult = { ok: true } | { ok: false; error: string };
 type LoginResult = { ok: true } | { ok: false; error: string };
 type SaveDraftResult = { ok: true } | { ok: false; error: string };
 
+// 정보 수정을 위한 파셜 타입
+export type UpdateProfileInput = Partial<UserProfile> & {
+  pregnancyWeeks?: number;
+  pregnancyDays?: number;
+};
+
 type UserContextValue = {
   user: UserProfile | null;
   isLoading: boolean;
@@ -27,6 +36,7 @@ type UserContextValue = {
   login: (id: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   saveOnboarding: (week: number, day: number, dueDate: string) => Promise<void>;
+  updateUser: (newData: UpdateProfileInput) => Promise<void>;
 };
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -124,8 +134,42 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setUser(updated);
   };
 
+  // 마이페이지 정보 수정용 함수 추가
+  const updateUser: UserContextValue['updateUser'] = async (newData) => {
+    if (!user) return;
+
+    // pregnancyWeeks / pregnancyDays 가 전달될 경우 week / day 에 호환 매핑
+    const newWeek = newData.pregnancyWeeks ?? newData.week ?? user.week;
+    const newDay = newData.pregnancyDays ?? newData.day ?? user.day;
+
+    const updated: UserProfile = {
+      ...user,
+      ...newData,
+      week: newWeek,
+      day: newDay,
+      pregnancyWeeks: newWeek,
+      pregnancyDays: newDay,
+    };
+
+    const accounts = await getAccounts();
+    accounts[user.id] = updated;
+    await setAccounts(accounts);
+    setUser(updated);
+  };
+
   return (
-    <UserContext.Provider value={{ user, isLoading, register, saveDraft, login, logout, saveOnboarding }}>
+    <UserContext.Provider
+      value={{
+        user,
+        isLoading,
+        register,
+        saveDraft,
+        login,
+        logout,
+        saveOnboarding,
+        updateUser,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

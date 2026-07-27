@@ -29,17 +29,14 @@ export default function MyPageScreen() {
   const [dueDate, setDueDate] = useState<string>(user?.dueDate || '2026-12-07');
 
   const handleSaveInfo = () => {
-    if (updateUser) {
-      updateUser({
-        ...user,
-        nickname,
-        pregnancyWeeks: Number(weeks) || 0,
-        pregnancyDays: Number(days) || 0,
-        dueDate,
-      });
-    }
-    setIsEditModalOpen(false);
-  };
+  updateUser({
+    nickname,
+    pregnancyWeeks: Number(weeks) || 0,
+    pregnancyDays: Number(days) || 0,
+    dueDate,
+  });
+  setIsEditModalOpen(false);
+};
 
   const handleLogout = () => {
     Alert.alert('로그아웃', '정말 로그아웃 하시겠습니까?', [
@@ -60,30 +57,20 @@ export default function MyPageScreen() {
   const ContainerComponent = ScreenContainer || View;
 
   return (
-    <ContainerComponent style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <ContainerComponent style={{ flex: 1 }} paddingHorizontal={0}>
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* 상단 헤더 (뒤로가기 버튼 + 로고 & 타이틀) */}
+        {/* 상단 헤더 */}
         <View style={styles.header}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => router.push('/(tabs)/home')}
-            hitSlop={12}
-          >
+          <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
             <Image
               source={require('../../assets/images/back.png')}
               style={styles.backIcon}
               resizeMode="contain"
             />
           </Pressable>
-
-          <Image
-            source={require('../../assets/images/mompeace_full_logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
           <Text style={styles.headerTitle}>마이 페이지</Text>
         </View>
 
@@ -91,7 +78,7 @@ export default function MyPageScreen() {
         <View style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <Text style={styles.profileName}>
-              {user?.nickname || nickname || '맘토리'}님 👶
+              {user?.nickname || nickname || '맘토리'}님
             </Text>
           </View>
           <Text style={styles.profileSub}>
@@ -194,28 +181,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     paddingBottom: 40,
-    backgroundColor: '#FFFFFF',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 20,
-  },
-  backButton: {
-    marginBottom: 12,
-    alignSelf: 'flex-start',
   },
   backIcon: {
     width: 24,
     height: 24,
   },
-  logo: {
-    height: 36,
-    width: 140,
-    marginBottom: 12,
-  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#111111',
+    color: '#6A3A25',
   },
   profileCard: {
     backgroundColor: '#FFF5F5',
