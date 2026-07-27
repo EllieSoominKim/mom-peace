@@ -39,7 +39,9 @@ export function ChatScreenContent() {
       text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :) 오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
     },
   ]);
-  const [inputText, setInputText] = useState('');
+  consgit mv fronted frontend
+git commit -m "rename fronted to frontend"
+git pusht [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
