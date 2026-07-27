@@ -36,7 +36,7 @@ export function ChatScreenContent() {
     {
       id: '1',
       sender: 'ai',
-      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :)\n오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
+      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :) 오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
     },
   ]);
   const [inputText, setInputText] = useState('');

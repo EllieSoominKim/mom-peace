@@ -12,25 +12,25 @@ const SHEET_MIN_HEIGHT = 530;
 const FEATURES = [
   {
     icon: require('../../assets/images/onboarding_barcode.png'),
-    title: '영양성분표 스캔 & 섭취 판단',
+    title: '영양성분표 스캔',
     desc: '탄수화물·당류·열량 확인 및 섭취 안전도 분석',
     iconBg: colors.primarySoft,
   },
   {
     icon: require('../../assets/images/onboarding_today.png'),
     title: '카페인 누적 관리',
-    desc: '검색으로 임산부 하루 권장량 준수 확인',
+    desc: '메뉴 검색으로 하루 권장량 준수 여부 확인',
     iconBg: '#EDE9FE',
   },
   {
     icon: require('../../assets/images/onboarding_diary.png'),
-    title: '오늘의 섭취 현황 한눈에',
+    title: '오늘의 섭취 현황',
     desc: '스캔·검색한 오늘 식단을 기록하고 한눈에 관리',
     iconBg: '#FFE9DD',
   },
   {
     icon: require('../../assets/images/onboarding_ai.png'),
-    title: 'AI 챗봇 케어 상담',
+    title: 'AI 챗봇상담',
     desc: '임신·영양·건강에 대한 궁금증을 해결',
     iconBg: colors.safeSoft,
   },

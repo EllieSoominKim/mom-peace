@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
  * - 휴대폰 Expo Go에서 테스트할 때는 컴퓨터의 LAN IP로 직접 바꿔줘야 해요.
  *   (PowerShell에서 `ipconfig` 실행 → IPv4 주소 확인 후 아래 값 교체)
  */
-export const API_BASE_URL = 'http://172.30.1.61:8000';
+export const API_BASE_URL = 'http://192.168.35.41:8000';
 
 export class ApiError extends Error {
   status: number;
