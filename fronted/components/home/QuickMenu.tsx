@@ -6,15 +6,15 @@ import { radius, spacing, typography } from '../../theme/typography';
 
 const ITEMS = [
   {
-    icon: require('../../assets/icons/barcode.png'),
+    icon: require('../../assets/icons/home_nutrition.png'),
     title: '오늘의 음식',
-    desc: '식품 안전 확인',
+    desc: '영양성분표 촬영',
     href: '/(tabs)/scan',
   },
   {
-    icon: require('../../assets/icons/menu.png'),
+    icon: require('../../assets/icons/home_coffee.png'),
     title: '오늘의 카페인',
-    desc: '카페인 권장량 기준',
+    desc: '카페인 함유량 검색',
     href: '/caffeine-today',
   },
 ] as const;
@@ -24,11 +24,11 @@ export default function QuickMenu() {
     <View style={styles.row}>
       {ITEMS.map((item) => (
         <Pressable key={item.title} style={styles.box} onPress={() => router.push(item.href as any)}>
-          <View style={styles.iconCircle}>
-            <Image source={item.icon} style={styles.icon} resizeMode="contain" />
+          <Image source={item.icon} style={styles.icon} resizeMode="contain" />
+          <View style={styles.textCol}>
+            <Text style={typography.bodyBold}>{item.title}</Text>
+            <Text style={[typography.caption, { color: colors.textSecondary }]}>{item.desc}</Text>
           </View>
-          <Text style={typography.bodyBold}>{item.title}</Text>
-          <Text style={[typography.caption, { color: colors.textSecondary }]}>{item.desc}</Text>
         </Pressable>
       ))}
     </View>
@@ -46,16 +46,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.primarySoft,
     padding: spacing.md,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
   },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.pill,
-    backgroundColor: colors.bgWhite,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
+  textCol: {
+    flex: 1,
   },
-  icon: { width: 22, height: 22 },
+  icon: { width: 32, height: 32 },
 });

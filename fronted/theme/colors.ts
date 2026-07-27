@@ -34,6 +34,12 @@ export const colors = {
   cardBg: '#FFFFFF',
   shadow: 'rgba(232, 103, 122, 0.12)',
 
+  // 홈 화면 "오늘 누적 당류·탄수화물" 바 색상 (핑크 톤, 서로 다른 색조)
+  sugarBar: '#F47E8A',
+  sugarBarSoft: '#FFE4E6',
+  carbBar: '#E85D8A',
+  carbBarSoft: '#FCE1EA',
+
   // 홈 화면 "오늘의 섭취 요약" 칩 색상 (시안에서 실측)
   heroText: '#6A3A25',
   remainingBoxBg: '#FEF2F2',

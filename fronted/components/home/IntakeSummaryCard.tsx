@@ -102,21 +102,21 @@ export default function IntakeSummaryCard({
 
           <Text style={[typography.bodyBold, { marginTop: spacing.md }]}>오늘 누적 당류·탄수화물</Text>
           <ProgressRow
-            label="당류"
-            current={sugar.current}
-            max={sugar.max}
-            unit={sugar.unit}
-            barColor={colors.safe}
-            barBgColor={colors.safeSoft}
-          />
-          <ProgressRow
-            label="탄수화물"
-            current={carb.current}
-            max={carb.max}
-            unit={carb.unit}
-            barColor={colors.caution}
-            barBgColor={colors.cautionSoft}
-          />
+  label="당류"
+  current={sugar.current}
+  max={sugar.max}
+  unit={sugar.unit}
+  barColor={colors.sugarBar}
+  barBgColor={colors.sugarBarSoft}
+/>
+<ProgressRow
+  label="탄수화물"
+  current={carb.current}
+  max={carb.max}
+  unit={carb.unit}
+  barColor={colors.carbBar}
+  barBgColor={colors.carbBarSoft}
+/>
         </>
       )}
     </Card>
