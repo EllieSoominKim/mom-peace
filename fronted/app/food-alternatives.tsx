@@ -30,7 +30,7 @@ export default function FoodAlternatives() {
       <AlternativeMenuSection
         items={items}
         onSelect={(item) =>
-          router.push({ pathname: '/scan-result', params: { productName: item.name } })
+          router.push({ pathname: '/(tabs)/scan-result', params: { productName: item.name } })
         }
       />
     </ScreenContainer>

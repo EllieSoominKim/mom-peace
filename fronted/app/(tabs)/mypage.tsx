@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,26 +16,46 @@ import { useUser } from '../../context/UserContext';
 
 export default function MyPageScreen() {
   const router = useRouter();
-  const userContext = useUser() as any;
-  const user = userContext?.user;
-  const logout = userContext?.logout || (() => {});
-  const updateUser = userContext?.updateUser || userContext?.setUser || (() => {});
+  const { user, updateUser, logout } = useUser();
 
   // 정보 수정 모달 상태
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [nickname, setNickname] = useState<string>(user?.nickname || '맘토리');
-  const [weeks, setWeeks] = useState<string>(String(user?.pregnancyWeeks ?? 21));
-  const [days, setDays] = useState<string>(String(user?.pregnancyDays ?? 3));
-  const [dueDate, setDueDate] = useState<string>(user?.dueDate || '2026-12-07');
+  const [nickname, setNickname] = useState<string>('');
+  const [weeks, setWeeks] = useState<string>('0');
+  const [days, setDays] = useState<string>('0');
+  const [dueDate, setDueDate] = useState<string>('');
 
-  const handleSaveInfo = () => {
-  updateUser({
-    nickname,
-    pregnancyWeeks: Number(weeks) || 0,
-    pregnancyDays: Number(days) || 0,
-    dueDate,
-  });
-  setIsEditModalOpen(false);
+  // 핵심: user 데이터가 불러와지거나 변경될 때마다 Form State를 최신화
+  useEffect(() => {
+    if (user) {
+      setNickname(user.nickname || '');
+      setWeeks(String(user.week ?? user.pregnancyWeeks ?? 0));
+      setDays(String(user.day ?? user.pregnancyDays ?? 0));
+      setDueDate(user.dueDate || '');
+    }
+  }, [user]);
+
+  const handleSaveInfo = async () => {
+  if (!user) {
+    Alert.alert('알림', '사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+
+  try {
+    await updateUser({
+      nickname,
+      week: Number(weeks) || 0,
+      day: Number(days) || 0,
+      pregnancyWeeks: Number(weeks) || 0,
+      pregnancyDays: Number(days) || 0,
+      dueDate,
+    });
+    setIsEditModalOpen(false);
+    Alert.alert('완료', '정보가 수정되었습니다.');
+  } catch (e) {
+    console.error('User update error:', e); // <-- 터미널/콘솔에 실제 에러 내용 출력
+    Alert.alert('오류', '정보 수정 중 문제가 발생했습니다.');
+  }
 };
 
   const handleLogout = () => {
@@ -44,20 +64,19 @@ export default function MyPageScreen() {
       {
         text: '로그아웃',
         style: 'destructive',
-        onPress: () => {
-          logout();
-          // 회원가입/로그인 시작 화면으로 이동
+        onPress: async () => {
+          await logout();
           router.replace('/(auth)/welcome');
         },
       },
     ]);
   };
 
-  // ScreenContainer 안전 처리 (기본 View 대체)
-  const ContainerComponent = ScreenContainer || View;
+  const currentWeek = user?.week ?? user?.pregnancyWeeks ?? 0;
+  const currentDay = user?.day ?? user?.pregnancyDays ?? 0;
 
   return (
-    <ContainerComponent style={{ flex: 1 }} paddingHorizontal={0}>
+    <ScreenContainer style={{ flex: 1 }} paddingHorizontal={0}>
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
@@ -78,17 +97,16 @@ export default function MyPageScreen() {
         <View style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <Text style={styles.profileName}>
-              {user?.nickname || nickname || '맘토리'}님
+              {user?.nickname || '회원'}님 👶
             </Text>
           </View>
           <Text style={styles.profileSub}>
-            {user?.pregnancyWeeks ?? weeks}주 {user?.pregnancyDays ?? days}일 · 예정일 D-133
+            {currentWeek}주 {currentDay}일 · 예정일 {user?.dueDate || '미설정'}
           </Text>
         </View>
 
         {/* 메뉴 목록 */}
         <View style={styles.menuContainer}>
-          {/* 정보 수정 */}
           <Pressable
             style={styles.menuItem}
             onPress={() => setIsEditModalOpen(true)}
@@ -152,6 +170,7 @@ export default function MyPageScreen() {
                 style={styles.input}
                 value={dueDate}
                 onChangeText={setDueDate}
+                placeholder="2026-10-26"
               />
 
               <View style={styles.modalButtons}>
@@ -172,7 +191,7 @@ export default function MyPageScreen() {
           </View>
         </Modal>
       </ScrollView>
-    </ContainerComponent>
+    </ScreenContainer>
   );
 }
 
@@ -272,8 +291,6 @@ const styles = StyleSheet.create({
     color: '#888888',
     textDecorationLine: 'underline',
   },
-
-  /* Modal Styles */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

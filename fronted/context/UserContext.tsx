@@ -57,6 +57,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
+        if (__DEV__) {
+          // 개발 중(Expo Go)에는 reload할 때마다 로그인 세션을 초기화해서
+          // 항상 로그인/회원가입 화면부터 테스트할 수 있게 함.
+          // (계정 자체는 남아있어서 아이디/비밀번호로 다시 로그인은 가능함)
+          await AsyncStorage.removeItem(SESSION_KEY);
+          setIsLoading(false);
+          return;
+        }
         const sessionId = await AsyncStorage.getItem(SESSION_KEY);
         if (sessionId) {
           const accounts = await getAccounts();

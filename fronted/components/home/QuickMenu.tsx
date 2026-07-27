@@ -7,15 +7,15 @@ import { radius, spacing, typography } from '../../theme/typography';
 const ITEMS = [
   {
     icon: require('../../assets/icons/home_nutrition.png'),
-    title: '오늘의 음식',
-    desc: '영양성분표 스캔',
+    title: '영양성분표 촬영',
+    desc: '식품 안전 확인',
     href: '/(tabs)/scan',
   },
   {
     icon: require('../../assets/icons/home_coffee.png'),
-    title: '오늘의 카페인',
-    desc: '카페인 함유량 검색',
-    href: '/caffeine-today',
+    title: '카페인 검색',
+    desc: '카페인 권장량 기준',
+    href: '/(tabs)/caffeine-today',
   },
 ] as const;
 

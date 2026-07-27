@@ -46,6 +46,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="mypage" options={{ title: '마이' }} />
 
       <Tabs.Screen name="scan" options={{ href: null }} />
+      <Tabs.Screen name="scan-result" options={{ href: null }} />
+      <Tabs.Screen name="caffeine-today" options={{ href: null, tabBarHideOnKeyboard: true }} />
       <Tabs.Screen name="community/write" options={{ href: null }} />
       <Tabs.Screen
         name="community/[id]"

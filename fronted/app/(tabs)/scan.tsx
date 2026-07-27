@@ -18,7 +18,7 @@ export default function NutritionScan() {
   const [error, setError] = useState<string | null>(null);
 
   const goToResultWithMock = () => {
-    router.push({ pathname: '/scan-result', params: { source: 'ocr-mock' } });
+    router.push({ pathname: '/(tabs)/scan-result', params: { source: 'ocr-mock' } });
   };
 
   const captureAndAnalyze = async () => {
@@ -32,7 +32,7 @@ export default function NutritionScan() {
       const result = await analyzeNutritionLabel(photo.base64, 'image/jpeg');
 
       router.push({
-        pathname: '/scan-result',
+        pathname: '/(tabs)/scan-result',
         params: {
           source: 'ocr',
           productName: result.productName || undefined,

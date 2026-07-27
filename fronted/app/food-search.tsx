@@ -15,7 +15,7 @@ export default function FoodSearch() {
 
   const goToResult = (name: string) => {
     if (!name.trim()) return;
-    router.push({ pathname: '/scan-result', params: { productName: name.trim() } });
+    router.push({ pathname: '/(tabs)/scan-result', params: { productName: name.trim() } });
   };
 
   return (

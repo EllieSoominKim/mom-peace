@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import ScreenContainer from '../components/ui/ScreenContainer';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useDiary } from '../context/DiaryContext';
-import { colors } from '../theme/colors';
-import { radius, spacing, typography } from '../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import { useDiary } from '../../context/DiaryContext';
+import { colors } from '../../theme/colors';
+import { radius, spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -114,7 +114,7 @@ export default function ScanResultScreen() {
       <ScreenContainer>
         <View style={styles.backRow}>
           <Pressable onPress={() => router.push('/(tabs)/scan')} hitSlop={12}>
-            <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
           <Text style={styles.title}>스캔 결과</Text>
         </View>

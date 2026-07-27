@@ -13,6 +13,7 @@ type Props = {
   variant?: 'flat' | 'gradient';
   growWhenShort?: boolean;
   edges?: Edge[];
+  contentPaddingBottom?: number;
 };
 
 const webMinHeight = Platform.OS === 'web' ? PHONE_CONTENT_HEIGHT : undefined;
@@ -25,6 +26,7 @@ export default function ScreenContainer({
   variant = 'flat',
   growWhenShort = false,
   edges = ['top', 'bottom', 'left', 'right'],
+  contentPaddingBottom = 32,
 }: Props) {
   const Wrapper = scroll ? ScrollView : View;
 
@@ -39,7 +41,7 @@ export default function ScreenContainer({
         scroll
           ? {
               paddingHorizontal,
-              paddingBottom: 32,
+              paddingBottom: contentPaddingBottom,
               ...(growWhenShort ? { flexGrow: 1, minHeight: webMinHeight } : null),
             }
           : undefined

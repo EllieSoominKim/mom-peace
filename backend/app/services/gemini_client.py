@@ -80,7 +80,8 @@ def analyze_risk(product_name: str, ingredients: str, pregnancy_week: int, today
         if data.get("level") not in ("safe", "caution", "danger"):
             raise ValueError("invalid level from Gemini response")
         return data
-    except Exception:
+    except Exception as e:
+        print(f"[gemini_client] 성분 위험도 분석 실패 -> 목데이터로 폴백. 원인: {type(e).__name__}: {e}")
         # Gemini 호출 실패 시 서비스 중단 대신 규칙 기반 판단으로 안전하게 폴백
         return _mock_analysis(pregnancy_week, today_caffeine_mg)
 
@@ -138,7 +139,8 @@ def chat_reply(message: str, pregnancy_week: int | None = None, context: str | N
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception:
+    except Exception as e:
+        print(f"[gemini_client] 챗봇 응답 생성 실패 -> 데모 답변으로 폴백. 원인: {type(e).__name__}: {e}")
         return _mock_chat_reply(message)
 
 # ---- 영양성분표 이미지 분석(OCR) ----
