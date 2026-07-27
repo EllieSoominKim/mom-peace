@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
  *   (PowerShell에서 `ipconfig` 실행 → IPv4 주소 확인 후 아래 값 교체)
  */
 export const API_BASE_URL =
-  Platform.OS === 'web' ? 'http://localhost:8000' : 'http://192.168.35.41:8000';
+  Platform.OS === 'web' ? 'http://localhost:8000' : 'http://172.30.1.61:8000';
 
 export class ApiError extends Error {
   status: number;

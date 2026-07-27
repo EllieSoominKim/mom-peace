@@ -1,5 +1,6 @@
 import React from 'react';
-import { Platform, SafeAreaView, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { PHONE_CONTENT_HEIGHT } from './WebPhoneFrame';

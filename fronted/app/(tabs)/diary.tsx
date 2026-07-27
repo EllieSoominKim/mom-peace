@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import ScreenContainer from '../../components/ui/ScreenContainer';
 import IntakeSummaryCard from '../../components/home/IntakeSummaryCard';
 import TodayFoodCard from '../../components/home/TodayFoodCard';
@@ -9,6 +10,7 @@ import { useDiary, DAILY_LIMITS } from '../../context/DiaryContext';
 import { colors } from '../../theme/colors';
 import { spacing, typography } from '../../theme/typography';
 
+const TITLE_COLOR = '#6A3A25';
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 function todayLabel() {
@@ -26,7 +28,12 @@ export default function Diary() {
 
   return (
     <ScreenContainer>
-      <Text style={[typography.h2, { marginTop: spacing.md }]}>오늘의 섭취</Text>
+      <View style={styles.backRow}>
+        <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
+          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+        </Pressable>
+        <Text style={styles.title}>오늘의 섭취</Text>
+      </View>
       <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4 }]}>
         {todayLabel()} · {user?.week ? `${user.week}주 ${user.day}일` : '기본 정보 미입력'}
       </Text>
@@ -41,3 +48,17 @@ export default function Diary() {
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingTop: spacing.sm,
+  },
+  title: {
+    ...typography.h1,
+    fontSize: 20,
+    color: TITLE_COLOR,
+  },
+});
