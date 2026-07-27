@@ -12,9 +12,9 @@ import { radius, spacing, typography } from '../../theme/typography';
 const TITLE_COLOR = '#6A3A25';
 
 const STRENGTH_OPTIONS = [
-  { label: '0.5배', value: 0.5 },
-  { label: '1배', value: 1 },
-  { label: '1.5배', value: 1.5 },
+  { label: '연하게', value: 0.5 },
+  { label: '기본', value: 1 },
+  { label: '진하게', value: 1.5 },
 ] as const;
 
 function round(n: number) {
