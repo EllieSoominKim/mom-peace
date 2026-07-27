@@ -8,7 +8,7 @@ const ITEMS = [
   {
     icon: require('../../assets/icons/home_nutrition.png'),
     title: '오늘의 음식',
-    desc: '영양성분표 촬영',
+    desc: '영양성분표 스캔',
     href: '/(tabs)/scan',
   },
   {

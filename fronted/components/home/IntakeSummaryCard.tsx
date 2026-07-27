@@ -61,7 +61,7 @@ export default function IntakeSummaryCard({
       {!hasEntries ? (
         <View style={styles.emptyBox}>
           <Text style={[typography.body, { color: colors.textSecondary, textAlign: 'center' }]}>
-            오늘 먹은 음식이 추가되지 않았습니다!{'\n\n'}'오늘의 섭취' 혹은 '오늘의 음식'을 통해{'\n'}음식을 추가해주세요 :)
+            오늘 먹은 음식이 추가되지 않았습니다!{'\n\n'}'오늘의 음식'을 통해 음식을 추가해주세요 :)
           </Text>
         </View>
       ) : (

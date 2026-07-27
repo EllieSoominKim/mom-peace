@@ -65,8 +65,20 @@ export default function MyPageScreen() {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* 상단 로고 & 타이틀 */}
+        {/* 상단 헤더 (뒤로가기 버튼 + 로고 & 타이틀) */}
         <View style={styles.header}>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => router.push('/(tabs)/home')}
+            hitSlop={12}
+          >
+            <Image
+              source={require('../../assets/images/back.png')}
+              style={styles.backIcon}
+              resizeMode="contain"
+            />
+          </Pressable>
+
           <Image
             source={require('../../assets/images/mompeace_full_logo.png')}
             style={styles.logo}
@@ -79,7 +91,7 @@ export default function MyPageScreen() {
         <View style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <Text style={styles.profileName}>
-              {user?.nickname || nickname || '맘토리'}님👶 👑
+              {user?.nickname || nickname || '맘토리'}님 👶
             </Text>
           </View>
           <Text style={styles.profileSub}>
@@ -186,6 +198,14 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
+  },
+  backButton: {
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   logo: {
     height: 36,
