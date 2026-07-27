@@ -3,7 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import ScreenContainer from '../../../components/ui/ScreenContainer';
 import PostCard from '../../../components/community/PostCard';
-import { communityPosts } from '../../../constants/mock-data';
+import { useCommunity } from '../../../context/CommunityContext';
 import { colors } from '../../../theme/colors';
 import { radius, spacing, typography } from '../../../theme/typography';
 
@@ -11,6 +11,7 @@ const CATEGORIES = ['전체', '나눔', '판매', '질문'] as const;
 const TITLE_COLOR = '#6A3A25';
 
 export default function CommunityList() {
+  const { posts: communityPosts } = useCommunity();
   const [active, setActive] = useState<(typeof CATEGORIES)[number]>('전체');
 
   const posts =
@@ -56,7 +57,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: spacing.sm,   // spacing.md → spacing.sm
+    paddingTop: spacing.sm,
     marginBottom: spacing.sm,
   },
   titleRow: {

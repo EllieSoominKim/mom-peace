@@ -207,6 +207,7 @@ export type CommunityPost = {
   price?: string;
   commentCount: number;
   createdAt: string;
+  imageUri?: string;
 };
 
 export const communityPosts: CommunityPost[] = [

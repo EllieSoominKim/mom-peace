@@ -13,7 +13,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import ScreenContainer from '../../../components/ui/ScreenContainer';
 import Card from '../../../components/ui/Card';
-import { communityPosts } from '../../../constants/mock-data';
+import { useCommunity } from '../../../context/CommunityContext';
 import { colors } from '../../../theme/colors';
 import { radius, spacing, typography } from '../../../theme/typography';
 
@@ -26,7 +26,8 @@ const MOCK_COMMENTS = [
 
 export default function CommunityDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const post = communityPosts.find((p) => p.id === id) ?? communityPosts[0];
+  const { posts } = useCommunity();
+  const post = posts.find((p) => p.id === id) ?? posts[0];
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -75,6 +76,9 @@ export default function CommunityDetail() {
               </View>
               <Text style={[typography.small, { color: colors.textTertiary }]}>{post.createdAt}</Text>
             </View>
+            {post.imageUri && (
+              <Image source={{ uri: post.imageUri }} style={styles.postImage} resizeMode="cover" />
+            )}
             <Text style={[typography.h3, { marginTop: 8 }]}>{post.title}</Text>
             <Text style={[typography.caption, { color: colors.textTertiary, marginTop: 4 }]}>
               {post.author} · {post.week}주차
@@ -132,6 +136,13 @@ const styles = StyleSheet.create({
     color: TITLE_COLOR,
   },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: radius.md,
+    marginTop: spacing.sm,
+    backgroundColor: colors.bgSoft,
+  },
   tag: {
     borderRadius: radius.pill,
     paddingHorizontal: 10,

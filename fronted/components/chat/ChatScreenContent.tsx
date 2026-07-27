@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   ActivityIndicator,
   Image,
@@ -43,11 +43,29 @@ export function ChatScreenContent() {
   ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, loading]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSend = async (textToSend?: string) => {
     const text = textToSend || inputText;
@@ -88,11 +106,7 @@ export function ChatScreenContent() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
+    <View style={styles.container}>
       {/* 상단 헤더 (back.png 버튼 포함) */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -186,7 +200,10 @@ export function ChatScreenContent() {
       <View
         style={[
           styles.inputContainer,
-          { paddingBottom: Math.max(insets.bottom, 10) },
+          {
+            paddingBottom: Math.max(insets.bottom, 10),
+            marginBottom: Math.max(0, keyboardHeight - 65),
+          },
         ]}
       >
         <TextInput
@@ -209,7 +226,7 @@ export function ChatScreenContent() {
           <Ionicons name="paper-plane" size={18} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

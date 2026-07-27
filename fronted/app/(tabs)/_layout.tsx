@@ -42,7 +42,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="home" options={{ title: '홈' }} />
       <Tabs.Screen name="diary" options={{ title: '오늘의 섭취' }} />
       <Tabs.Screen name="community/index" options={{ title: '커뮤니티' }} />
-      <Tabs.Screen name="chat" options={{ title: '챗봇' }} />
+      <Tabs.Screen name="chat" options={{ title: '챗봇', tabBarHideOnKeyboard: true }} />
       <Tabs.Screen name="mypage" options={{ title: '마이' }} />
 
       <Tabs.Screen name="scan" options={{ href: null }} />

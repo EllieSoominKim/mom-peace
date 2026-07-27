@@ -8,6 +8,7 @@ import { fontFamily } from '../theme/typography';
 import WebPhoneFrame from '../components/ui/WebPhoneFrame';
 import { UserProvider } from '../context/UserContext';
 import { DiaryProvider } from '../context/DiaryContext';
+import { CommunityProvider } from '../context/CommunityContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,18 +33,20 @@ export default function RootLayout() {
   return (
     <UserProvider>
       <DiaryProvider>
-        <WebPhoneFrame>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
-            <Stack.Screen name="scan-result" options={{ presentation: 'card' }} />
-            <Stack.Screen name="food-search" />
-            <Stack.Screen name="food-alternatives" />
-            <Stack.Screen name="caffeine-today" />
-            <Stack.Screen name="chat-modal" options={{ presentation: 'modal' }} />
-          </Stack>
-        </WebPhoneFrame>
+        <CommunityProvider>
+          <WebPhoneFrame>
+            <StatusBar style="dark" />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+              <Stack.Screen name="scan-result" options={{ presentation: 'card' }} />
+              <Stack.Screen name="food-search" />
+              <Stack.Screen name="food-alternatives" />
+              <Stack.Screen name="caffeine-today" />
+              <Stack.Screen name="chat-modal" options={{ presentation: 'modal' }} />
+            </Stack>
+          </WebPhoneFrame>
+        </CommunityProvider>
       </DiaryProvider>
     </UserProvider>
   );

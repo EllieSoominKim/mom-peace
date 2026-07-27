@@ -12,26 +12,26 @@ const SHEET_MIN_HEIGHT = 530;
 const FEATURES = [
   {
     icon: require('../../assets/images/onboarding_barcode.png'),
-    title: '음식 바코드 스캔',
-    desc: '스캔 한 번으로 안전 확인',
+    title: '영양성분표 스캔 & 섭취 판단',
+    desc: '탄수화물·당류·열량 확인 및 섭취 안전도 분석',
     iconBg: colors.primarySoft,
   },
   {
-    icon: require('../../assets/images/onboarding_ai.png'),
-    title: '위험한 음식은 대체메뉴 추천',
-    desc: 'AI가 판단해서 바로 알려드려요',
+    icon: require('../../assets/images/onboarding_today.png'),
+    title: '카페인 누적 관리',
+    desc: '검색으로 임산부 하루 권장량 준수 확인',
     iconBg: '#EDE9FE',
   },
   {
-    icon: require('../../assets/images/onboarding_today.png'),
-    title: '주차별 오늘 챙길 것',
-    desc: '운동·영양제 가이드를 매일 챙겨드려요',
+    icon: require('../../assets/images/onboarding_diary.png'),
+    title: '오늘의 섭취 현황 한눈에',
+    desc: '스캔·검색한 오늘 식단을 기록하고 한눈에 관리',
     iconBg: '#FFE9DD',
   },
   {
-    icon: require('../../assets/images/onboarding_diary.png'),
-    title: '매일 기록하는 섭취량',
-    desc: '오늘 먹은 음식과 누적 섭취량을 한눈에',
+    icon: require('../../assets/images/onboarding_ai.png'),
+    title: 'AI 챗봇 케어 상담',
+    desc: '임신·영양·건강에 대한 궁금증을 해결',
     iconBg: colors.safeSoft,
   },
 ];
@@ -53,7 +53,7 @@ export default function Welcome() {
         </Text>
       </View>
 
-      <View style={{ gap: 8}}>
+      <View style={{ gap: 8 }}>
         {FEATURES.map((f) => (
           <Card key={f.title} style={styles.featureCard} padding={18}>
             <View style={[styles.iconBox, { backgroundColor: f.iconBg }]}>
@@ -67,7 +67,7 @@ export default function Welcome() {
         ))}
       </View>
 
-      <View style={{ marginTop: 'auto', paddingBottom: 0}}>
+      <View style={{ marginTop: 'auto', paddingBottom: 0 }}>
         <Button label="시작하기" onPress={() => router.replace('/(auth)/login')} />
       </View>
     </ScreenContainer>
@@ -76,16 +76,16 @@ export default function Welcome() {
 
 const styles = StyleSheet.create({
   logoArea: {
-  alignItems: 'center',
-  paddingTop: 50,
-  paddingBottom: spacing.sm,
-},
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingBottom: spacing.sm,
+  },
   logo: { width: 140, height: 140, marginBottom: spacing.sm },
   title: {
-  ...typography.h1,
-  color: '#6A3A25',
-  textAlign: 'center',
-},
+    ...typography.h1,
+    color: '#6A3A25',
+    textAlign: 'center',
+  },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 17,
-    // padding={18}로 가로 여백은 유지하고, 세로 여백만 별도로 좁힘
     paddingVertical: 10,
   },
   iconBox: {
