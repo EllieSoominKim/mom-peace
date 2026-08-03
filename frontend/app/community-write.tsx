@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import ScreenContainer from '../components/ui/ScreenContainer';
 import Button from '../components/ui/Button';
@@ -13,13 +13,31 @@ const CATEGORIES = ['나눔', '판매', '질문'] as const;
 const TITLE_COLOR = '#6A3A25';
 
 export default function CommunityWrite() {
-  const { addPost } = useCommunity();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { posts, addPost, updatePost, isOwner } = useCommunity();
+  const editingPost = id ? posts.find((p) => p.id === id) : undefined;
+  const isEditMode = !!editingPost;
+
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>('나눔');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [content, setContent] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!editingPost) return;
+    if (!isOwner(editingPost)) {
+      Alert.alert('수정할 수 없어요', '본인이 작성한 글만 수정할 수 있어요.');
+      router.replace('/(tabs)/community');
+      return;
+    }
+    setCategory(editingPost.category);
+    setTitle(editingPost.title);
+    setPrice(editingPost.price ?? '');
+    setContent(editingPost.preview);
+    setImageUri(editingPost.imageUri ?? null);
+  }, [editingPost?.id]);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -40,14 +58,20 @@ export default function CommunityWrite() {
     if (!title.trim() || !content.trim()) return;
     setSubmitting(true);
     try {
-      await addPost({
+      const input = {
         category,
         title: title.trim(),
         content: content.trim(),
         price: category === '판매' ? price.trim() : undefined,
         imageUri: imageUri ?? undefined,
-      });
-      router.push('/(tabs)/community');
+      };
+      if (isEditMode && editingPost) {
+        await updatePost(editingPost.id, input);
+        router.replace(`/community-post/${editingPost.id}`);
+      } else {
+        await addPost(input);
+        router.replace('/(tabs)/community');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -56,10 +80,10 @@ export default function CommunityWrite() {
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Pressable onPress={() => router.push('/(tabs)/community')} hitSlop={12}>
+        <Pressable onPress={() => router.back()} hitSlop={12}>
           <Image source={require('../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
         </Pressable>
-        <Text style={styles.title}>글쓰기</Text>
+        <Text style={styles.title}>{isEditMode ? '글 수정' : '글쓰기'}</Text>
       </View>
 
       <View style={styles.filterRow}>
@@ -114,7 +138,7 @@ export default function CommunityWrite() {
 
       <View style={{ marginTop: spacing.lg, marginBottom: spacing.lg }}>
         <Button
-          label={submitting ? '등록 중...' : '등록하기'}
+          label={submitting ? (isEditMode ? '수정 중...' : '등록 중...') : isEditMode ? '수정하기' : '등록하기'}
           onPress={handleSubmit}
           disabled={!title.trim() || !content.trim() || submitting}
           loading={submitting}
