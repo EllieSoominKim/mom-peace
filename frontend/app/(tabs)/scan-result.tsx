@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import ScreenContainer from '../components/ui/ScreenContainer';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useDiary } from '../context/DiaryContext';
-import { useUser } from '../context/UserContext';
-import { colors } from '../theme/colors';
-import { radius, spacing, typography } from '../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import { useDiary } from '../../context/DiaryContext';
+import { useUser } from '../../context/UserContext';
+import { colors } from '../../theme/colors';
+import { radius, spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -57,9 +57,9 @@ const STATUS_META: Record<Level, { bg: string; border: string; icon: string; ico
 };
 
 const NUTRIENT_ICON: Record<string, any> = {
-  탄수화물: require('../assets/icons/carbo.png'),
-  당류: require('../assets/icons/sugar.png'),
-  열량: require('../assets/icons/calorie.png'),
+  탄수화물: require('../../assets/icons/carbo.png'),
+  당류: require('../../assets/icons/sugar.png'),
+  열량: require('../../assets/icons/calorie.png'),
 };
 
 function nutrientTone(label: string, value: number, thresholds: (typeof TRIMESTER_THRESHOLDS)[Trimester]): { text: string; label: string } {
@@ -151,7 +151,7 @@ export default function ScanResultScreen() {
       <ScreenContainer>
         <View style={styles.backRow}>
           <Pressable onPress={() => router.push(backDestination as any)} hitSlop={12}>
-            <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
           <Text style={styles.title}>{screenTitle}</Text>
         </View>
@@ -236,7 +236,7 @@ export default function ScanResultScreen() {
             style={styles.nameInput}
             value={productName}
             onChangeText={setProductName}
-            placeholder="예: 유기농 그릭 요거트"
+            placeholder="예: 새우깡(과자)"
             placeholderTextColor={colors.textTertiary}
           />
           <View style={styles.metaRow}>

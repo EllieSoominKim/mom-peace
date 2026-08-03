@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import ScreenContainer from '../components/ui/ScreenContainer';
-import Button from '../components/ui/Button';
-import { lookupFoodNutrition, ApiError } from '../lib/api';
-import { colors } from '../theme/colors';
-import { radius, spacing, typography } from '../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import Button from '../../components/ui/Button';
+import { lookupFoodNutrition, ApiError } from '../../lib/api';
+import { colors } from '../../theme/colors';
+import { radius, spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -44,7 +44,7 @@ export default function FoodSearch() {
     <ScreenContainer>
       <View style={styles.backRow}>
         <Pressable onPress={() => router.push('/scan')} hitSlop={12}>
-          <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>외식·집밥 메뉴 검색</Text>
       </View>

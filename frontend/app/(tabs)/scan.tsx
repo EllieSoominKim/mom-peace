@@ -2,12 +2,12 @@ import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import ScreenContainer from '../components/ui/ScreenContainer';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import { analyzeNutritionLabel, ApiError } from '../lib/api';
-import { colors } from '../theme/colors';
-import { radius, spacing, typography } from '../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import { analyzeNutritionLabel, ApiError } from '../../lib/api';
+import { colors } from '../../theme/colors';
+import { radius, spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -52,7 +52,7 @@ export default function NutritionScan() {
     <ScreenContainer>
       <View style={styles.backRow}>
         <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
-          <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>영양성분표 촬영</Text>
       </View>
@@ -119,11 +119,11 @@ export default function NutritionScan() {
 
       <View style={styles.tipRow}>
         <View style={styles.tipBox}>
-          <Image source={require('../assets/icons/sun.png')} style={styles.tipIcon} resizeMode="contain" />
+          <Image source={require('../../assets/icons/sun.png')} style={styles.tipIcon} resizeMode="contain" />
           <Text style={[typography.caption, { flex: 1, fontSize: 12 }]}>밝은 곳에서 촬영하기</Text>
         </View>
         <View style={styles.tipBox}>
-          <Image source={require('../assets/icons/barcode.png')} style={styles.tipIcon} resizeMode="contain" />
+          <Image source={require('../../assets/icons/barcode.png')} style={styles.tipIcon} resizeMode="contain" />
           <Text style={[typography.caption, { flex: 1, fontSize: 12 }]}>영양성분표 전체 비추기</Text>
         </View>
       </View>

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import ScreenContainer from '../components/ui/ScreenContainer';
-import AlternativeMenuSection from '../components/scan/AlternativeMenuCard';
-import { getFoodAlternatives, AlternativeFoodItem, ApiError } from '../lib/api';
-import { colors } from '../theme/colors';
-import { spacing, typography } from '../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import AlternativeMenuSection from '../../components/scan/AlternativeMenuCard';
+import { getFoodAlternatives, AlternativeFoodItem, ApiError } from '../../lib/api';
+import { colors } from '../../theme/colors';
+import { spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -38,7 +38,7 @@ export default function FoodAlternatives() {
     <ScreenContainer>
       <View style={styles.backRow}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>대체 메뉴 보기</Text>
       </View>
