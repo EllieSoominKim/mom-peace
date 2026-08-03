@@ -26,7 +26,7 @@ export default function CommunityList() {
           </Pressable>
           <Text style={styles.title}>커뮤니티</Text>
         </View>
-        <Pressable style={styles.writeBtn} onPress={() => router.push('/(tabs)/community/write')}>
+        <Pressable style={styles.writeBtn} onPress={() => router.push('/community-write')}>
           <Text style={[typography.captionBold, { color: colors.textOnPrimary }]}>+ 글쓰기</Text>
         </Pressable>
       </View>

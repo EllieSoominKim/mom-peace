@@ -14,7 +14,7 @@ const CATEGORY_COLOR: Record<CommunityPost['category'], string> = {
 
 export default function PostCard({ post }: { post: CommunityPost }) {
   return (
-    <Pressable onPress={() => router.push(`/(tabs)/community/${post.id}`)}>
+    <Pressable onPress={() => router.push(`/community-post/${post.id}`)}>
       <Card style={{ marginBottom: spacing.sm }} padding={16}>
         <View style={styles.topRow}>
           <View style={[styles.tag, { backgroundColor: `${CATEGORY_COLOR[post.category]}22` }]}>
