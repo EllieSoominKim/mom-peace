@@ -9,6 +9,7 @@ GEMINI_API_KEY가 없으면 데모용 규칙 기반 판단으로 대체된다 (�
 """
 
 import json
+from datetime import date
 
 from app.config import settings
 
@@ -60,8 +61,24 @@ def _mock_analysis(pregnancy_week: int, today_caffeine_mg: float) -> dict:
     return {"level": level, "message": messages[level]}
 
 
+# ---- 하루 호출 횟수 상한 (개발 중 실수로 반복 호출돼 과금되는 걸 막기 위함) ----
+# 서버 프로세스가 살아있는 동안만 유지되는 메모리 카운터. 재시작하면 초기화됨.
+_call_count_by_day: dict[str, int] = {}
+
+
+def _under_daily_limit() -> bool:
+    today = date.today().isoformat()
+    count = _call_count_by_day.get(today, 0)
+    return count < settings.gemini_daily_call_limit
+
+
+def _record_call() -> None:
+    today = date.today().isoformat()
+    _call_count_by_day[today] = _call_count_by_day.get(today, 0) + 1
+
+
 def analyze_risk(product_name: str, ingredients: str, pregnancy_week: int, today_caffeine_mg: float = 0) -> dict:
-    if not settings.gemini_api_key:
+    if not settings.gemini_api_key or not _under_daily_limit():
         return _mock_analysis(pregnancy_week, today_caffeine_mg)
 
     import google.generativeai as genai  # 실제 호출 시점에만 import
@@ -75,6 +92,7 @@ def analyze_risk(product_name: str, ingredients: str, pregnancy_week: int, today
     prompt = _build_prompt(product_name, ingredients, pregnancy_week, today_caffeine_mg)
 
     try:
+        _record_call()
         response = model.generate_content(prompt)
         data = json.loads(response.text)
         if data.get("level") not in ("safe", "caution", "danger"):
@@ -150,15 +168,21 @@ NUTRITION_OCR_PROMPT = """
 사진 속 표에서 다음 값을 읽어서, 반드시 아래 JSON 형식으로만 응답하세요.
 표에 없는 항목은 0으로 채우세요. 다른 텍스트는 포함하지 마세요.
 
+주의: 영양성분표는 "총 내용량(예: 400g)" 전체 기준으로 값이 적혀있을 수도 있고,
+"1회 제공량" 또는 "30g당"처럼 총 내용량보다 작은 기준량으로 적혀있을 수도 있습니다.
+kcal/carbG/sugarG/sodiumMg/fatG/proteinG 값은 반드시 "baseAmount"에 적힌 기준량 그대로,
+환산하지 말고 표에 적힌 숫자 그대로 읽어주세요. 환산은 이후 코드에서 처리합니다.
+
 {
   "productName": "표에 제품명이 보이면 그 이름, 안 보이면 빈 문자열",
-  "totalContent": "총 내용량 숫자만 (g 단위, 예: 80)",
-  "kcal": "열량(kcal) 숫자만",
-  "carbG": "탄수화물(g) 숫자만",
-  "sugarG": "당류(g) 숫자만",
-  "sodiumMg": "나트륨(mg) 숫자만",
-  "fatG": "지방(g) 숫자만",
-  "proteinG": "단백질(g) 숫자만"
+  "totalContent": "총 내용량 숫자만 (g 단위, 예: 400)",
+  "baseAmount": "kcal 등 영양성분 값들의 기준이 되는 양 (g 단위). 예: '30g당'이면 30. 총 내용량 기준으로 표기되어 있으면 totalContent와 같은 값",
+  "kcal": "baseAmount 기준 열량(kcal) 숫자만",
+  "carbG": "baseAmount 기준 탄수화물(g) 숫자만",
+  "sugarG": "baseAmount 기준 당류(g) 숫자만",
+  "sodiumMg": "baseAmount 기준 나트륨(mg) 숫자만",
+  "fatG": "baseAmount 기준 지방(g) 숫자만",
+  "proteinG": "baseAmount 기준 단백질(g) 숫자만"
 }
 """
 
@@ -167,6 +191,7 @@ def _mock_nutrition_ocr() -> dict:
     return {
         "productName": "",
         "totalContent": 80,
+        "baseAmount": 80,
         "kcal": 410,
         "carbG": 52,
         "sugarG": 5,
@@ -176,10 +201,31 @@ def _mock_nutrition_ocr() -> dict:
     }
 
 
+def _scale_to_total_content(data: dict) -> dict:
+    """영양성분표가 '기준량(baseAmount)'당 값으로 적혀있으면 총 내용량 기준으로 환산한다.
+    예: 총내용량 400g, 30g당 열량 150kcal -> 총내용량 기준 열량 = 150 * (400/30)
+    baseAmount가 비어있거나 totalContent와 같으면 그대로 둔다 (이미 총 내용량 기준)."""
+    total_content = data.get("totalContent") or 0
+    base_amount = data.get("baseAmount") or total_content
+
+    if not total_content or not base_amount:
+        return data
+
+    ratio = total_content / base_amount
+    if ratio == 1:
+        return data
+
+    scaled = dict(data)
+    for key in ("kcal", "carbG", "sugarG", "sodiumMg", "fatG", "proteinG"):
+        scaled[key] = round(data[key] * ratio, 1)
+    return scaled
+
+
 def extract_nutrition_from_image(image_base64: str, mime_type: str = "image/jpeg") -> dict:
     """영양정보표 사진(base64)을 Gemini에 보내 수치를 읽어온다.
-    GEMINI_API_KEY가 없거나 호출/파싱이 실패하면 데모용 목데이터로 안전하게 폴백한다."""
-    if not settings.gemini_api_key:
+    GEMINI_API_KEY가 없거나, 하루 호출 상한을 넘었거나, 호출/파싱이 실패하면
+    데모용 목데이터로 안전하게 폴백한다."""
+    if not settings.gemini_api_key or not _under_daily_limit():
         return _mock_nutrition_ocr()
 
     import base64
@@ -193,6 +239,7 @@ def extract_nutrition_from_image(image_base64: str, mime_type: str = "image/jpeg
     )
 
     try:
+        _record_call()
         image_bytes = base64.b64decode(image_base64)
         response = model.generate_content(
             [NUTRITION_OCR_PROMPT, {"mime_type": mime_type, "data": image_bytes}]
@@ -205,9 +252,10 @@ def extract_nutrition_from_image(image_base64: str, mime_type: str = "image/jpeg
             except (TypeError, ValueError):
                 return 0.0
 
-        return {
+        parsed = {
             "productName": str(data.get("productName") or ""),
             "totalContent": _num(data.get("totalContent")),
+            "baseAmount": _num(data.get("baseAmount")),
             "kcal": _num(data.get("kcal")),
             "carbG": _num(data.get("carbG")),
             "sugarG": _num(data.get("sugarG")),
@@ -215,6 +263,7 @@ def extract_nutrition_from_image(image_base64: str, mime_type: str = "image/jpeg
             "fatG": _num(data.get("fatG")),
             "proteinG": _num(data.get("proteinG")),
         }
+        return _scale_to_total_content(parsed)
     except Exception as e:
         print(f"[gemini_client] 영양성분표 이미지 분석 실패 -> 목데이터로 폴백. 원인: {type(e).__name__}: {e}")
         return _mock_nutrition_ocr()

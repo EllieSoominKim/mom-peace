@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import ScreenContainer from '../../../components/ui/ScreenContainer';
-import Button from '../../../components/ui/Button';
-import TextField from '../../../components/ui/TextField';
-import { useCommunity } from '../../../context/CommunityContext';
-import { colors } from '../../../theme/colors';
-import { radius, spacing, typography } from '../../../theme/typography';
+import ScreenContainer from '../components/ui/ScreenContainer';
+import Button from '../components/ui/Button';
+import TextField from '../components/ui/TextField';
+import { useCommunity } from '../context/CommunityContext';
+import { colors } from '../theme/colors';
+import { radius, spacing, typography } from '../theme/typography';
 
 const CATEGORIES = ['나눔', '판매', '질문'] as const;
 const TITLE_COLOR = '#6A3A25';
@@ -57,7 +57,7 @@ export default function CommunityWrite() {
     <ScreenContainer>
       <View style={styles.header}>
         <Pressable onPress={() => router.push('/(tabs)/community')} hitSlop={12}>
-          <Image source={require('../../../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
+          <Image source={require('../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>글쓰기</Text>
       </View>

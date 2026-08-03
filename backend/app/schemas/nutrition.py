@@ -31,3 +31,13 @@ class NutritionOcrResponse(CamelModel):
     sodium_mg: float
     fat_g: float
     protein_g: float
+
+
+class FoodNutritionLookupResponse(CamelModel):
+    """외식·집밥 메뉴 검색 결과. matched=False면 DB에 없어 기본 추정치를 반환한 것."""
+
+    matched: bool
+    name: str
+    carb_g: float
+    sugar_g: float
+    kcal: float

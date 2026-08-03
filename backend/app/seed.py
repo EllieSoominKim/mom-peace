@@ -3,13 +3,23 @@
 실행: python -m app.seed
 - 주차별 가이드 샘플 3구간 (초/중/후기)
 - 대체 메뉴 매칭용 식품 샘플 (커피 카테고리)
+- 카테고리별 안전 대체 음식 추천 DB (카테고리 20개, 음식 120개)
+- 외식·집밥 메뉴 검색용 음식 영양정보 DB (CSV에서 로드, 40개)
 """
 
+import csv
+from pathlib import Path
+
 from app.database import Base, SessionLocal, engine
+from app.data.food_alternatives_data import CATEGORY_KEYWORDS, SAFE_ALTERNATIVES
 from app.models.food import FoodItem
+from app.models.food_alternative import FoodCategoryKeyword, SafeFoodAlternative
+from app.models.food_nutrition import FoodNutritionInfo
 from app.models.guide import WeeklyGuide
 
 Base.metadata.create_all(bind=engine)
+
+FOOD_NUTRITION_CSV = Path(__file__).parent / "data" / "food_nutrition.csv"
 
 
 def seed():
@@ -84,6 +94,46 @@ def seed():
                     ),
                 ]
             )
+
+        db.commit()
+
+        if db.query(FoodCategoryKeyword).count() == 0:
+            db.add_all(
+                FoodCategoryKeyword(category=category, keyword=keyword)
+                for category, keywords in CATEGORY_KEYWORDS.items()
+                for keyword in keywords
+            )
+
+        if db.query(SafeFoodAlternative).count() == 0:
+            db.add_all(
+                SafeFoodAlternative(
+                    category=category,
+                    name=item["name"],
+                    reason=item["reason"],
+                    sugar_g=item["sugar_g"],
+                    carb_g=item["carb_g"],
+                    kcal=item["kcal"],
+                    level="safe",
+                )
+                for category, items in SAFE_ALTERNATIVES.items()
+                for item in items
+            )
+
+        db.commit()
+
+        if db.query(FoodNutritionInfo).count() == 0:
+            with open(FOOD_NUTRITION_CSV, encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                db.add_all(
+                    FoodNutritionInfo(
+                        name=row["name"],
+                        aliases=row["aliases"],
+                        carb_g=float(row["carb_g"]),
+                        sugar_g=float(row["sugar_g"]),
+                        kcal=float(row["kcal"]),
+                    )
+                    for row in reader
+                )
 
         db.commit()
         print("시드 데이터 생성 완료")

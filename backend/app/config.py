@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Gemini
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
+    gemini_daily_call_limit: int = 30  # 개발 중 실수로 반복 호출돼 과금되는 걸 막기 위한 하루 상한
 
     # 식약처 (MFDS) 공공데이터
     mfds_api_key: str = ""

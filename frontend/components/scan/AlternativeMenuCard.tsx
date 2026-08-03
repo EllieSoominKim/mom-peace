@@ -15,12 +15,7 @@ export default function AlternativeMenuSection({ items, onSelect }: Props) {
   if (!items.length) return null;
 
   return (
-    <View style={{ marginTop: spacing.lg }}>
-      <Text style={typography.h3}>대신 이건 어때요?</Text>
-      <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4, marginBottom: spacing.sm }]}>
-        오늘 잔여 허용량 안에서 즐길 수 있는 대체 메뉴예요
-      </Text>
-
+    <View style={{ marginTop:spacing.sm}}>
       <View style={{ gap: spacing.sm }}>
         {items.map((item) => (
           <Pressable key={item.id} onPress={() => onSelect?.(item)}>

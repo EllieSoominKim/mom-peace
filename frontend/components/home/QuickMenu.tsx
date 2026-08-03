@@ -9,13 +9,13 @@ const ITEMS = [
     icon: require('../../assets/icons/home_nutrition.png'),
     title: '영양성분표 촬영',
     desc: '식품 안전 확인',
-    href: '/(tabs)/scan',
+    href: '/scan',
   },
   {
     icon: require('../../assets/icons/home_coffee.png'),
     title: '카페인 검색',
     desc: '카페인 권장량 기준',
-    href: '/(tabs)/caffeine-today',
+    href: '/caffeine-today',
   },
 ] as const;
 

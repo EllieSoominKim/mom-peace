@@ -2,12 +2,12 @@ import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
-import ScreenContainer from '../../components/ui/ScreenContainer';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import { analyzeNutritionLabel, ApiError } from '../../lib/api';
-import { colors } from '../../theme/colors';
-import { radius, spacing, typography } from '../../theme/typography';
+import ScreenContainer from '../components/ui/ScreenContainer';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import { analyzeNutritionLabel, ApiError } from '../lib/api';
+import { colors } from '../theme/colors';
+import { radius, spacing, typography } from '../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -18,7 +18,7 @@ export default function NutritionScan() {
   const [error, setError] = useState<string | null>(null);
 
   const goToResultWithMock = () => {
-    router.push({ pathname: '/(tabs)/scan-result', params: { source: 'ocr-mock' } });
+    router.push({ pathname: '/scan-result', params: { source: 'ocr-mock' } });
   };
 
   const captureAndAnalyze = async () => {
@@ -32,7 +32,7 @@ export default function NutritionScan() {
       const result = await analyzeNutritionLabel(photo.base64, 'image/jpeg');
 
       router.push({
-        pathname: '/(tabs)/scan-result',
+        pathname: '/scan-result',
         params: {
           source: 'ocr',
           productName: result.productName || undefined,
@@ -52,13 +52,13 @@ export default function NutritionScan() {
     <ScreenContainer>
       <View style={styles.backRow}>
         <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
-          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
-        <Text style={styles.title}>영양성분표 스캔</Text>
+        <Text style={styles.title}>영양성분표 촬영</Text>
       </View>
 
       <Text style={styles.subtitle}>
-        찰칵 찍으면 끝! 당과 탄수화물 함량으로 혈당 위험도를 바로 확인해드려요
+        당·탄수화물 함량으로 혈당 위험도를 바로 확인해요
       </Text>
 
       <Card padding={16}>
@@ -98,7 +98,7 @@ export default function NutritionScan() {
             <Text style={[styles.scanningLabel, { marginTop: 0, marginLeft: 8 }]}>영양정보를 읽고 있어요...</Text>
           </View>
         ) : (
-          <Text style={styles.scanningLabel}>사진을 찍어 영양정보를 확인하세요</Text>
+          <Text style={styles.scanningLabel}>영양성분표를 촬영해주세요</Text>
         )}
       </Card>
 
@@ -113,18 +113,18 @@ export default function NutritionScan() {
           ⚠ 영양성분표가 없다면?
         </Text>
         <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 6 }]}>
-          외식·집밥 메뉴 검색으로 영양 성분을 빠르게 확인하고 기록하세요
+          '외식·집밥 메뉴 검색'으로 영양 성분을 확인하고 기록하세요
         </Text>
       </View>
 
       <View style={styles.tipRow}>
         <View style={styles.tipBox}>
-          <Image source={require('../../assets/icons/sun.png')} style={styles.tipIcon} resizeMode="contain" />
-          <Text style={[typography.caption, { flex: 1 }]}>밝은 곳에서 촬영하기</Text>
+          <Image source={require('../assets/icons/sun.png')} style={styles.tipIcon} resizeMode="contain" />
+          <Text style={[typography.caption, { flex: 1, fontSize: 12 }]}>밝은 곳에서 촬영하기</Text>
         </View>
         <View style={styles.tipBox}>
-          <Image source={require('../../assets/icons/barcode.png')} style={styles.tipIcon} resizeMode="contain" />
-          <Text style={[typography.caption, { flex: 1 }]}>영양성분표 전체 스캔하기</Text>
+          <Image source={require('../assets/icons/barcode.png')} style={styles.tipIcon} resizeMode="contain" />
+          <Text style={[typography.caption, { flex: 1, fontSize: 12 }]}>영양성분표 전체 비추기</Text>
         </View>
       </View>
 
@@ -141,7 +141,7 @@ export default function NutritionScan() {
         onPress={() => router.push('/food-search')}
       >
         <Text style={[typography.bodyBold, { color: colors.primary, textDecorationLine: 'underline' }]}>
-          외식·집밥 검색하기
+          외식·집밥 메뉴 검색
         </Text>
       </Pressable>
     </ScreenContainer>

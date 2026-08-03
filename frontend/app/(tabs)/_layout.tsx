@@ -16,6 +16,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
+        animation: 'fade',
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
@@ -44,15 +45,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="community/index" options={{ title: '커뮤니티' }} />
       <Tabs.Screen name="chat" options={{ title: '챗봇', tabBarHideOnKeyboard: true }} />
       <Tabs.Screen name="mypage" options={{ title: '마이' }} />
-
-      <Tabs.Screen name="scan" options={{ href: null }} />
-      <Tabs.Screen name="scan-result" options={{ href: null }} />
-      <Tabs.Screen name="caffeine-today" options={{ href: null, tabBarHideOnKeyboard: true }} />
-      <Tabs.Screen name="community/write" options={{ href: null }} />
-      <Tabs.Screen
-        name="community/[id]"
-        options={{ href: null, tabBarHideOnKeyboard: true }}
-      />
     </Tabs>
   );
 }

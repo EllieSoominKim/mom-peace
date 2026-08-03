@@ -36,12 +36,23 @@ export default function RootLayout() {
         <CommunityProvider>
           <WebPhoneFrame>
             <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.bg },
+                animation: 'slide_from_right',
+              }}
+            >
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+              <Stack.Screen name="scan" />
+              <Stack.Screen name="scan-result" />
+              <Stack.Screen name="caffeine-today" />
+              <Stack.Screen name="community-write" />
+              <Stack.Screen name="community-post/[id]" />
               <Stack.Screen name="food-search" />
               <Stack.Screen name="food-alternatives" />
-              <Stack.Screen name="chat-modal" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="chat-modal" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
             </Stack>
           </WebPhoneFrame>
         </CommunityProvider>

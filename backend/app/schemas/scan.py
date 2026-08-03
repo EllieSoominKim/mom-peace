@@ -35,6 +35,9 @@ class AlternativeItem(CamelModel):
     name: str
     reason: str
     level: RiskLevel
+    sugar_g: float = 0
+    carb_g: float = 0
+    kcal: float = 0
 
 
 class ScanAnalyzeRequest(CamelModel):

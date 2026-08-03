@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
  * - 휴대폰 Expo Go에서 테스트할 때는 컴퓨터의 LAN IP로 직접 바꿔줘야 해요.
  *   (PowerShell에서 `ipconfig` 실행 → IPv4 주소 확인 후 아래 값 교체)
  */
-export const API_BASE_URL = 'http://192.168.35.41:8000';
+export const API_BASE_URL = 'http://172.30.1.44:8000';
 
 export class ApiError extends Error {
   status: number;
@@ -30,9 +30,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     });
   } catch (err: any) {
     if (err?.name === 'AbortError') {
-      throw new ApiError(0, '서버 응답이 너무 오래 걸려요. 백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
+      throw new ApiError(0, '서버 응답이 너무 오래 걸려요.\n백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
     }
-    throw new ApiError(0, '서버에 연결할 수 없어요. 백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
+    throw new ApiError(0, '서버에 연결할 수 없어요.\n백엔드가 켜져 있는지, IP가 맞는지 확인해주세요.');
   } finally {
     clearTimeout(timeoutId);
   }
@@ -69,6 +69,20 @@ export function analyzeScan(barcode: string, pregnancyWeek?: number): Promise<Sc
   });
 }
 
+export type AlternativeFoodItem = {
+  id: string;
+  name: string;
+  reason: string;
+  level: RiskLevel;
+  sugarG: number;
+  carbG: number;
+  kcal: number;
+};
+
+export function getFoodAlternatives(productName: string): Promise<{ category: string; items: AlternativeFoodItem[] }> {
+  return request(`/alternatives/by-product?productName=${encodeURIComponent(productName)}`);
+}
+
 // ---- 챗봇 ----
 
 export function sendChatMessage(
@@ -100,6 +114,18 @@ export function analyzeNutritionLabel(imageBase64: string, mimeType = 'image/jpe
     method: 'POST',
     body: JSON.stringify({ imageBase64, mimeType }),
   });
+}
+
+export type FoodNutritionLookupResult = {
+  matched: boolean;
+  name: string;
+  carbG: number;
+  sugarG: number;
+  kcal: number;
+};
+
+export function lookupFoodNutrition(foodName: string): Promise<FoodNutritionLookupResult> {
+  return request(`/nutrition/lookup?foodName=${encodeURIComponent(foodName)}`);
 }
 
 // ---- 오늘의 카페인 (카페 메뉴 검색) ----

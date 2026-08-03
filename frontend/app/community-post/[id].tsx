@@ -11,11 +11,11 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import ScreenContainer from '../../../components/ui/ScreenContainer';
-import Card from '../../../components/ui/Card';
-import { useCommunity } from '../../../context/CommunityContext';
-import { colors } from '../../../theme/colors';
-import { radius, spacing, typography } from '../../../theme/typography';
+import ScreenContainer from '../../components/ui/ScreenContainer';
+import Card from '../../components/ui/Card';
+import { useCommunity } from '../../context/CommunityContext';
+import { colors } from '../../theme/colors';
+import { radius, spacing, typography } from '../../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -62,7 +62,7 @@ export default function CommunityDetail() {
     <ScreenContainer scroll={false} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => router.push('/(tabs)/community')} hitSlop={12}>
-          <Image source={require('../../../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
+          <Image source={require('../../assets/images/back.png')} style={styles.backIcon} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>게시글</Text>
       </View>

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
-import ScreenContainer from '../../components/ui/ScreenContainer';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { useDiary, DAILY_LIMITS } from '../../context/DiaryContext';
-import { searchCafeMenu, CafeMenuItem, ApiError } from '../../lib/api';
-import { colors } from '../../theme/colors';
-import { radius, spacing, typography } from '../../theme/typography';
+import ScreenContainer from '../components/ui/ScreenContainer';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { useDiary, DAILY_LIMITS } from '../context/DiaryContext';
+import { searchCafeMenu, CafeMenuItem, ApiError } from '../lib/api';
+import { colors } from '../theme/colors';
+import { radius, spacing, typography } from '../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
@@ -114,7 +114,7 @@ export default function CaffeineTodayScreen() {
     <ScreenContainer>
       <View style={styles.backRow}>
         <Pressable onPress={() => router.push('/(tabs)/home')} hitSlop={12}>
-          <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
         <Text style={styles.title}>카페인 함유량 검색</Text>
       </View>
@@ -260,7 +260,7 @@ function RemainingBox({
   return (
     <View style={styles.remainingBox}>
       <Image
-        source={require('../../assets/images/coffee.png')}
+        source={require('../assets/images/coffee.png')}
         style={styles.remainingDecoIcon}
         resizeMode="contain"
       />

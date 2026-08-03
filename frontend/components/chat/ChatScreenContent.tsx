@@ -37,7 +37,7 @@ export function ChatScreenContent() {
     {
       id: '1',
       sender: 'ai',
-      text: "안녕하세요! '맘편하게' AI 케어 매니저입니다 :)\n오늘 산모 건강이나 식단관리에 대해 궁금한 점이 있으신가요?",
+      text: "안녕하세요! '맘편하게' AI 챗봇입니다.\n제 답변은 의학 진단을 대신할 수 없으니 참고용으로만 활용해 주세요. 임신·육아 관련 질문은 물론, 소소한 일상 이야기까지 무엇이든 물어보세요!",
     },
   ]);
   const [inputText, setInputText] = useState('');
@@ -106,7 +106,7 @@ export function ChatScreenContent() {
 
   return (
     <View style={styles.container}>
-      {/* 상단 헤더 (다른 화면과 동일한 back.png + title 패턴) */}
+      {/* 상단 헤더 */}
       <View style={styles.backRow}>
         <TouchableOpacity onPress={handleGoHome} hitSlop={12} activeOpacity={0.7}>
           <Image
@@ -134,11 +134,6 @@ export function ChatScreenContent() {
               msg.sender === 'user' ? styles.userRow : styles.aiRow,
             ]}
           >
-            {msg.sender === 'ai' && (
-              <View style={styles.avatarContainer}>
-                <Ionicons name="sparkles" size={18} color="#FFF" />
-              </View>
-            )}
             <View
               style={[
                 styles.bubble,
@@ -161,9 +156,6 @@ export function ChatScreenContent() {
 
         {loading && (
           <View style={[styles.messageRow, styles.aiRow]}>
-            <View style={styles.avatarContainer}>
-              <Ionicons name="sparkles" size={18} color="#FFF" />
-            </View>
             <View style={[styles.bubble, styles.aiBubble, styles.loadingBubble]}>
               <ActivityIndicator size="small" color={colors.primary} />
             </View>
@@ -190,7 +182,7 @@ export function ChatScreenContent() {
         </ScrollView>
       </View>
 
-      {/* 하단 입력창 (게시글 댓글 입력창과 동일한 방식: 키보드 높이만큼만 밀어 올림) */}
+      {/* 하단 입력창 */}
       <View style={[styles.inputContainer, { marginBottom: keyboardHeight }]}>
         <TextInput
           style={styles.input}
@@ -252,20 +244,6 @@ const styles = StyleSheet.create({
   },
   userRow: {
     justifyContent: 'flex-end',
-  },
-  avatarContainer: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
   },
   bubble: {
     maxWidth: '75%',

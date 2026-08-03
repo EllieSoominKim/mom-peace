@@ -1,54 +1,75 @@
 import React, { useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import ScreenContainer from '../../components/ui/ScreenContainer';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { useDiary } from '../../context/DiaryContext';
-import { colors } from '../../theme/colors';
-import { radius, spacing, typography } from '../../theme/typography';
+import ScreenContainer from '../components/ui/ScreenContainer';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { useDiary } from '../context/DiaryContext';
+import { useUser } from '../context/UserContext';
+import { colors } from '../theme/colors';
+import { radius, spacing, typography } from '../theme/typography';
 
 const TITLE_COLOR = '#6A3A25';
 
 const BASE_NUTRIENT = { carbG: 45, sugarG: 8, kcal: 320 };
 
 type Level = 'safe' | 'caution' | 'danger';
+type Trimester = 1 | 2 | 3;
 
-function levelFromSugar(sugarG: number): Level {
-  if (sugarG >= 25) return 'danger';
-  if (sugarG >= 12) return 'caution';
+// 임신 주차가 올라갈수록(특히 임신성 당뇨 위험이 커지는 임신 후기, 28주~) 기준을 더 엄격하게 좁힘.
+const TRIMESTER_THRESHOLDS: Record<Trimester, { sugarCaution: number; sugarDanger: number; carbCaution: number; carbDanger: number; kcalCaution: number; kcalDanger: number }> = {
+  1: { sugarCaution: 15, sugarDanger: 30, carbCaution: 50, carbDanger: 75, kcalCaution: 350, kcalDanger: 550 }, // 임신 초기 (1~13주)
+  2: { sugarCaution: 12, sugarDanger: 25, carbCaution: 45, carbDanger: 70, kcalCaution: 300, kcalDanger: 500 }, // 임신 중기 (14~27주)
+  3: { sugarCaution: 10, sugarDanger: 20, carbCaution: 40, carbDanger: 60, kcalCaution: 280, kcalDanger: 450 }, // 임신 후기 (28주~), 임신성 당뇨 위험 증가 반영
+};
+
+const TRIMESTER_LABEL: Record<Trimester, string> = {
+  1: '임신 초기',
+  2: '임신 중기',
+  3: '임신 후기',
+};
+
+function trimesterFromWeek(week: number): Trimester {
+  if (week >= 28) return 3;
+  if (week >= 14) return 2;
+  return 1;
+}
+
+function levelFromSugar(sugarG: number, thresholds: (typeof TRIMESTER_THRESHOLDS)[Trimester]): Level {
+  if (sugarG >= thresholds.sugarDanger) return 'danger';
+  if (sugarG >= thresholds.sugarCaution) return 'caution';
   return 'safe';
 }
 
 const STATUS_META: Record<Level, { bg: string; border: string; icon: string; iconBg: string; label: string; title: string; desc: string }> = {
   safe: {
     bg: colors.safeSoft, border: colors.safe, icon: '✓', iconBg: colors.safe,
-    label: '안전', title: '오늘의 누적 섭취량 기준 안전해요', desc: '해당 제품은 섭취에 적합한 제품이에요.',
+    label: '안전', title: '오늘 섭취량 기준 안전해요', desc: '해당 제품은 섭취에 적합한 제품이에요.',
   },
   caution: {
     bg: colors.cautionSoft, border: colors.caution, icon: '!', iconBg: colors.caution,
-    label: '주의', title: '오늘의 누적 섭취량 기준 주의해야 해요', desc: '당류·탄수화물 비율이 다소 높은 편이에요.',
+    label: '주의', title: '오늘 섭취량 기준 주의가 필요해요', desc: '당류·탄수화물 비율이 다소 높은 편이에요.',
   },
   danger: {
     bg: colors.dangerSoft, border: colors.danger, icon: '✕', iconBg: colors.danger,
-    label: '위험', title: '오늘의 누적 섭취량 기준 위험해요', desc: '혈당 스파이크에 주의가 필요한 수치예요.',
+    label: '위험', title: '오늘 섭취량 기준 위험해요', desc: '혈당 스파이크에 주의가 필요한 수치예요.',
   },
 };
 
-const NUTRIENT_EMOJI: Record<string, string> = {
-  탄수화물: '🌾',
-  당류: '🍬',
-  열량: '🔥',
+const NUTRIENT_ICON: Record<string, any> = {
+  탄수화물: require('../assets/icons/carbo.png'),
+  당류: require('../assets/icons/sugar.png'),
+  열량: require('../assets/icons/calorie.png'),
 };
 
-function nutrientTone(label: string, value: number): { text: string; label: string } {
+function nutrientTone(label: string, value: number, thresholds: (typeof TRIMESTER_THRESHOLDS)[Trimester]): { text: string; label: string } {
   if (label === '탄수화물') {
-    return value >= 70 ? { text: colors.danger, label: '확인 필요' } : value >= 45 ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
+    return value >= thresholds.carbDanger ? { text: colors.danger, label: '확인 필요' } : value >= thresholds.carbCaution ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
   }
   if (label === '당류') {
-    return value >= 25 ? { text: colors.danger, label: '확인 필요' } : value >= 12 ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
+    return value >= thresholds.sugarDanger ? { text: colors.danger, label: '확인 필요' } : value >= thresholds.sugarCaution ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
   }
-  return value >= 500 ? { text: colors.danger, label: '확인 필요' } : value >= 300 ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
+  return value >= thresholds.kcalDanger ? { text: colors.danger, label: '확인 필요' } : value >= thresholds.kcalCaution ? { text: colors.caution, label: '주의' } : { text: colors.safe, label: '안전' };
 }
 
 function todayTimeLabel() {
@@ -61,18 +82,34 @@ function todayTimeLabel() {
   return `${y}.${m}.${d}. ${hh}:${mm}`;
 }
 
-const PORTION_UNITS = ['인분', '그릇', '접시', '봉지', '조각', 'g', 'ml', '개'];
+const PORTION_UNITS = ['개', '그릇', '쪽', '조각', '접시', '인분', '병', '봉지', '팩', '컵'];
+
+const PORTION_PRESETS = [
+  { label: '1/4', value: '0.25' },
+  { label: '1/3', value: '0.33' },
+  { label: '1/2', value: '0.5' },
+  { label: '1', value: '1' },
+  { label: '2', value: '2' },
+];
 
 export default function ScanResultScreen() {
-  const { productName: paramName, kcal: paramKcal, carbG: paramCarbG, sugarG: paramSugarG } =
-    useLocalSearchParams<{ productName?: string; kcal?: string; carbG?: string; sugarG?: string }>();
+  const { productName: paramName, kcal: paramKcal, carbG: paramCarbG, sugarG: paramSugarG, source } =
+    useLocalSearchParams<{ productName?: string; kcal?: string; carbG?: string; sugarG?: string; source?: string }>();
   const { addEntry } = useDiary();
+  const { user } = useUser();
   const [portion, setPortion] = useState('1');
   const [unit, setUnit] = useState(PORTION_UNITS[0]);
   const [unitPickerOpen, setUnitPickerOpen] = useState(false);
   const [productName, setProductName] = useState(paramName || '');
 
+  const isFromSearch = source === 'search';
+  const screenTitle = isFromSearch ? '검색 결과' : '스캔 결과';
+  const backDestination = isFromSearch ? '/food-search' : '/scan';
+
   const scannedAt = useMemo(() => todayTimeLabel(), []);
+
+  const trimester = trimesterFromWeek(user?.week ?? 0);
+  const thresholds = TRIMESTER_THRESHOLDS[trimester];
 
   const baseNutrient = {
     carbG: paramCarbG ? parseFloat(paramCarbG) : BASE_NUTRIENT.carbG,
@@ -85,7 +122,7 @@ export default function ScanResultScreen() {
   const sugarG = Math.round(baseNutrient.sugarG * multiplier);
   const kcal = Math.round(baseNutrient.kcal * multiplier);
 
-  const level = levelFromSugar(sugarG);
+  const level = levelFromSugar(sugarG, thresholds);
   const meta = STATUS_META[level];
 
   const nutrients = [
@@ -113,24 +150,24 @@ export default function ScanResultScreen() {
     >
       <ScreenContainer>
         <View style={styles.backRow}>
-          <Pressable onPress={() => router.push('/(tabs)/scan')} hitSlop={12}>
-            <Image source={require('../../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Pressable onPress={() => router.push(backDestination as any)} hitSlop={12}>
+            <Image source={require('../assets/images/back.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Text style={styles.title}>스캔 결과</Text>
+          <Text style={styles.title}>{screenTitle}</Text>
         </View>
 
         <Text style={[typography.body, { color: colors.textSecondary, marginBottom: spacing.md }]}>
-          영양 성분표 인식이 완료되었어요!
+          {isFromSearch ? '검색한 음식의 예상 영양정보를 알려드려요' : '영양 성분표 인식이 완료되었어요!'}
         </Text>
 
         <Card>
           <Text style={typography.h3}>주요 영양 정보</Text>
           <View style={styles.nutrientGrid}>
             {nutrients.map((n) => {
-              const tone = nutrientTone(n.label, n.raw);
+              const tone = nutrientTone(n.label, n.raw, thresholds);
               return (
                 <View key={n.label} style={styles.nutrientBox}>
-                  <Text style={styles.nutrientIcon}>{NUTRIENT_EMOJI[n.label]}</Text>
+                  <Image source={NUTRIENT_ICON[n.label]} style={styles.nutrientIcon} resizeMode="contain" />
                   <Text style={[typography.bodyBold, { marginTop: 6 }]}>{n.label}</Text>
                   <Text style={[typography.caption, { color: colors.textSecondary }]}>{n.value}</Text>
                   <Text style={[typography.captionBold, { color: tone.text, marginTop: 2 }]}>{tone.label}</Text>
@@ -142,6 +179,24 @@ export default function ScanResultScreen() {
 
         <Card style={{ marginTop: spacing.md }}>
           <Text style={typography.bodyBold}>섭취량</Text>
+          <View style={styles.presetRow}>
+            {PORTION_PRESETS.map((p) => (
+              <Pressable
+                key={p.label}
+                style={[styles.presetChip, portion === p.value && styles.presetChipActive]}
+                onPress={() => setPortion(p.value)}
+              >
+                <Text
+                  style={[
+                    typography.captionBold,
+                    { color: portion === p.value ? colors.textOnPrimary : colors.textSecondary },
+                  ]}
+                >
+                  {p.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
           <View style={styles.portionRow}>
             <TextInput
               style={styles.portionInput}
@@ -164,8 +219,10 @@ export default function ScanResultScreen() {
             <Text style={[typography.bodyBold, { color: meta.border, marginTop: 6 }]}>{meta.label}</Text>
           </View>
           <View style={styles.statusDivider} />
-          <View style={{ flex: 1 }}>
-            <Text style={[typography.caption, { color: colors.textSecondary }]}>누적 섭취량 기준</Text>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={[typography.small, { color: colors.textSecondary }]}>
+              누적 섭취량 기준 · {TRIMESTER_LABEL[trimester]}({user?.week ?? 0}주차) 기준 적용
+            </Text>
             <Text style={[typography.h3, { color: meta.border, marginTop: 2 }]}>{meta.title}</Text>
             <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 4 }]}>{meta.desc}</Text>
           </View>
@@ -173,7 +230,7 @@ export default function ScanResultScreen() {
 
         <Card style={{ marginTop: spacing.md }}>
           <Text style={[typography.caption, { color: colors.textSecondary, marginBottom: 6 }]}>
-            '오늘의 섭취'에 기록하기 위해 음식명을 입력해주세요 :)
+            '오늘의 섭취'에 기록하기 위해 음식명을 입력해주세요
           </Text>
           <TextInput
             style={styles.nameInput}
@@ -199,15 +256,15 @@ export default function ScanResultScreen() {
         )}
 
         <View style={{ marginTop: spacing.lg }}>
-          <Button label="오늘의 섭취에 추가" onPress={handleAdd} disabled={!productName.trim()} />
+          <Button label="'오늘의 섭취'에 추가" onPress={handleAdd} disabled={!productName.trim()} />
         </View>
 
         <Pressable
           style={{ marginTop: spacing.md, marginBottom: spacing.lg, alignItems: 'center' }}
-          onPress={() => router.push('/(tabs)/scan')}
+          onPress={() => router.push(backDestination as any)}
         >
           <Text style={[typography.bodyBold, { color: colors.primary, textDecorationLine: 'underline' }]}>
-            다시 스캔하기
+            {isFromSearch ? '다시 검색하기' : '다시 스캔하기'}
           </Text>
         </Pressable>
       </ScreenContainer>
@@ -241,7 +298,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingTop: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   title: {
     ...typography.h1,
@@ -259,6 +316,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.primary,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  presetChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgWhite,
+  },
+  presetChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   portionRow: {
     flexDirection: 'row',
@@ -320,7 +394,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     alignItems: 'center',
   },
-  nutrientIcon: { fontSize: 22 },
+  nutrientIcon: { width: 28, height: 28 },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',

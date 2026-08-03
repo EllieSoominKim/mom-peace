@@ -12,7 +12,7 @@ const SHEET_MIN_HEIGHT = 530;
 const FEATURES = [
   {
     icon: require('../../assets/images/onboarding_barcode.png'),
-    title: '영양성분표 스캔',
+    title: '영양성분표 촬영',
     desc: '탄수화물·당류·열량 확인 및 섭취 안전도 분석',
     iconBg: colors.primarySoft,
   },
