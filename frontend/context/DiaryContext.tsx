@@ -30,6 +30,7 @@ type DiaryContextValue = {
   sugarTotal: number;
   carbTotal: number;
   addEntry: (entry: Omit<DiaryEntry, 'id' | 'time'>) => Promise<void>;
+  deleteEntry: (id: string) => Promise<void>;
 };
 
 const DiaryContext = createContext<DiaryContextValue | null>(null);
@@ -63,12 +64,21 @@ export function DiaryProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(todayKey(user.id), JSON.stringify(updated));
   };
 
+  const deleteEntry: DiaryContextValue['deleteEntry'] = async (id) => {
+    if (!user) return;
+    const updated = entries.filter((e) => e.id !== id);
+    setEntries(updated);
+    await AsyncStorage.setItem(todayKey(user.id), JSON.stringify(updated));
+  };
+
   const caffeineTotal = entries.reduce((sum, e) => sum + (e.caffeineMg || 0), 0);
   const sugarTotal = entries.reduce((sum, e) => sum + (e.sugarG || 0), 0);
   const carbTotal = entries.reduce((sum, e) => sum + (e.carbG || 0), 0);
 
   return (
-    <DiaryContext.Provider value={{ entries, isLoading, caffeineTotal, sugarTotal, carbTotal, addEntry }}>
+    <DiaryContext.Provider
+      value={{ entries, isLoading, caffeineTotal, sugarTotal, carbTotal, addEntry, deleteEntry }}
+    >
       {children}
     </DiaryContext.Provider>
   );

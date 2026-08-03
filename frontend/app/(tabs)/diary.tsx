@@ -23,7 +23,7 @@ function todayLabel() {
 
 export default function Diary() {
   const { user } = useUser();
-  const { entries, caffeineTotal, sugarTotal, carbTotal } = useDiary();
+  const { entries, caffeineTotal, sugarTotal, carbTotal, deleteEntry } = useDiary();
   const hasEntries = entries.length > 0;
 
   return (
@@ -44,7 +44,12 @@ export default function Diary() {
         carb={{ current: carbTotal, max: todayIntake.carbDailyMax, unit: 'g' }}
         hasEntries={hasEntries}
       />
-      {hasEntries && <TodayFoodCard items={entries} showViewAll={false} />}
+      <TodayFoodCard
+        items={entries}
+        showViewAll={false}
+        onAddPress={() => router.push('/scan')}
+        onDeletePress={deleteEntry}
+      />
     </ScreenContainer>
   );
 }
